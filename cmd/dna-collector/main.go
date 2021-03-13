@@ -41,6 +41,12 @@ type authorInfo struct {
 	LastCommitDate time.Time
 }
 
+type AugmentedGitFile struct {
+
+	RepositoryName string `json:"repository_name"`
+	dnacollector.GitFile
+}
+
 func main() {
 	var (
 		verbose        = flag.Bool("verbose", false, "set to add verbose logging")
@@ -123,9 +129,11 @@ func main() {
 		doneRepo     int
 		authors      map[string]*authorInfo
 		commitsCount int
+		gitFilesCount int
 	)
 
 	authors = make(map[string]*authorInfo)
+	gitFilesArray := make([]*AugmentedGitFile, 0)
 loop:
 	for {
 		select {
@@ -141,7 +149,7 @@ loop:
 				if typedEvent.Finished {
 					doneRepo++
 				}
-			case dnacollector.ResultPipelineEvent:
+			case dnacollector.ResultCommitPipelineEvent:
 				commitsCount++
 
 				identity := typedEvent.Author.Name + typedEvent.Author.Email
@@ -155,6 +163,11 @@ loop:
 				if commit.Author.When.UTC().After(authors[identity].LastCommitDate) {
 					authors[identity].LastCommitDate = commit.Author.When.UTC()
 				}
+			// Collecting gitFiles
+			case dnacollector.ResultGitFilePipelineEvent:
+				gitFilesCount++
+				gitFilesArray = append(gitFilesArray, &AugmentedGitFile{typedEvent.Repository.GetName(), *typedEvent.GitFile})
+
 			}
 		case <-ticker:
 			if totalRepo == 0 {
@@ -163,28 +176,29 @@ loop:
 
 			log.Infof("%v/%v repos: ", doneRepo, totalRepo)
 			log.Infof("%v distinct authors, %v commit analyzed\n", len(authors), commitsCount)
+			log.Infof("%v files analyzed\n", gitFilesCount)
 		}
 	}
 
 	log.Infoln("Final stats:")
 	log.Infof("%v/%v repos: ", doneRepo, totalRepo)
 	log.Infof("%v distinct authors, %v commit analyzed\n", len(authors), commitsCount)
-
+	log.Infof("%v git files analyzed\n", gitFilesCount)
 	log.Infof("Dumping to output %v", *outputFilename)
 
-	authorsList := make([]*authorInfo, 0, len(authors))
-	for _, author := range authors {
-		authorsList = append(authorsList, author)
-	}
+	//authorsList := make([]*authorInfo, 0, len(authors))
+	//for _, author := range authors {
+	//	authorsList = append(authorsList, author)
+	//}
 
 	var (
 		jsonBytes []byte
 		err       error
 	)
 	if *prettyPrint {
-		jsonBytes, err = json.MarshalIndent(authorsList, "", "\t")
+		jsonBytes, err = json.MarshalIndent(gitFilesArray, "", "\t")
 	} else {
-		jsonBytes, err = json.Marshal(authorsList)
+		jsonBytes, err = json.Marshal(gitFilesArray)
 	}
 
 	if err != nil {

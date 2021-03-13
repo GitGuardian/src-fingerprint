@@ -1,7 +1,6 @@
 package dnacollector
 
 import (
-	"io"
 	"sync"
 
 	log "github.com/sirupsen/logrus"
@@ -17,13 +16,22 @@ type RepositoryListPipelineEvent struct {
 	Repositories []GitRepository
 }
 
-// ResultPipelineEvent represents the event for a result
-type ResultPipelineEvent struct {
+// ResultCommitPipelineEvent represents the event for a result
+type ResultCommitPipelineEvent struct {
 	Repository GitRepository
 	Commit     *object.Commit
 	Author     object.Signature
 	Committer  object.Signature
 }
+
+type ResultGitFilePipelineEvent struct {
+	Repository GitRepository
+	GitFile    *GitFile
+}
+
+//func (rgp *ResultGitFilePipelineEvent) ToJson() {
+//
+//}
 
 // RepositoryPipelineEvent represents an event from a repository
 type RepositoryPipelineEvent struct {
@@ -32,6 +40,7 @@ type RepositoryPipelineEvent struct {
 	// RepositoryName is the name of the repository
 	RepositoryName string
 }
+
 
 // CommitPipelineEvent represents an event from a repository
 type CommitPipelineEvent struct {
@@ -87,24 +96,28 @@ func (p *Pipeline) ExtractRepository(repository GitRepository, eventChan chan<- 
 		return err
 	}
 
-	log.Infof("Cloned repo %v (size: %v)\n", repository.GetName(), repository.GetStorageSize())
-	extractor, err := NewExtractor(gitRepository)
-	if err != nil {
-		return err
-	}
-	for {
-		commit, err := extractor.ExtractNextCommit()
-		if err != nil && err != io.EOF {
-			return err
+	log.Infof("Cloned repo %v (size: %v KB)\n", repository.GetName(), repository.GetStorageSize())
+	//extractor, err := NewExtractor(gitRepository)
+	//if err != nil {
+	//	return err
+	//}
+	//for {
+	//	commit, err := extractor.ExtractNextCommit()
+	//	if err != nil && err != io.EOF {
+	//		return err
+	//	}
+	//	if commit == nil {
+	//		break
+	//	}
+	//
+	//	author, commiter := p.Analyzer.AnalyzeCommit(commit)
+	//	p.publishEvent(eventChan, ResultPipelineEvent{repository, commit, author, commiter})
+	//}
+	extractorGitFile := NewFastExtractor()
+	extractorGitFile.Run(gitRepository)
+	for gitFile := range extractorGitFile.ChanGitFiles {
+		p.publishEvent(eventChan, ResultGitFilePipelineEvent{repository, gitFile})
 		}
-		if commit == nil {
-			break
-		}
-
-		author, commiter := p.Analyzer.AnalyzeCommit(commit)
-		p.publishEvent(eventChan, ResultPipelineEvent{repository, commit, author, commiter})
-	}
-
 	log.Infof("Done extracting %v\n", repository.GetName())
 	return nil
 }

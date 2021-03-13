@@ -8,7 +8,7 @@ It supports 3 main on premise version control service:
 
 * GitHub Enterprise
 * Gitlab CE and EE
-* BitBucket
+* BitBucket (not supported yet)
 
 ## Use the package
 
@@ -31,6 +31,12 @@ It supports 3 main on premise version control service:
     ./dna-collector -provider-url http://gitlab.example.com gitlab Groupe
     ```
 
+## Some examples 
+
+* Don't forget to build the package:  `go build ./cmd/dna-collector`
+
+1. Export all files sha from a GitHub Org to a file with logs: `./dna-collector -verbose -output file_shas_collected_dna.json github GitGuardian`
+2. Name params should be passed before positional parameters.
 ## Architecture
 
 ### Main overview
