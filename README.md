@@ -1,8 +1,8 @@
-# git-users-extractor
+# src-fingerprint
 
 ## Introduction
 
-The purpose of this package is to extract all git user information of your developers from your hosted source version control system
+The purpose of this package is to extract some git related information (all files sha, also commits sha) from your hosted source version control system
 
 It supports 3 main on premise version control service:
 
@@ -44,17 +44,17 @@ All the git information can be found inside commit that are located inside git r
 Our tree element step are the following:
 * Collect all repositories URL from the company.
 * Clone them with the appropriate authentication.
-* Clone them and iterate over commits to extract git config information.
-* Store this information in a json file.
+* Run git commands to extract the information we need on each repository.
+* Gather data and store this information in a json file.
 
 ### Implementation
 The root package is the abstract implementation of the extractor. It contains a Cloner, that clones a git repository.
-It contains a Pipeline that extracts git information for every commit, of every repository of an organization.
+It contains a Pipeline that extracts git information for every git artifact (currently a git file but we could support commit), of every repository of an organization.
 
 The github package contains the implementation of the Github Provider.
 The gitlab package contains the implementation of the Gitlab Provider.
 
-The cmd/guser-extractor package contains the binary code. It reads from CLI and environment the configuration and run the Pipeline on an organization.
+The cmd/dna-collector package contains the binary code. It reads from CLI and environment the configuration and run the Pipeline on an organization.
 
 ### Library we use
 
@@ -72,7 +72,3 @@ The cmd/guser-extractor package contains the binary code. It reads from CLI and 
 * Channels are cheap. Complex design overloading semantics isn't.
 
 
-### Notes eric 
-
-* We want to add more extractors -> We need to extract file shas
-* We will add more analyzer -> From the commits we want to get commits shas
