@@ -22,9 +22,11 @@ type config struct {
 	GitlabToken string `env:"GITLAB_TOKEN"`
 }
 
+const MaxPipelineEvents = 100
+
 func runExtract(pipeline *dnacollector.Pipeline, user string) chan dnacollector.PipelineEvent {
 	// buffer it a bit so it won't block if this is going too fast
-	ch := make(chan dnacollector.PipelineEvent, 100)
+	ch := make(chan dnacollector.PipelineEvent, MaxPipelineEvents)
 
 	go func(eventChannel chan dnacollector.PipelineEvent) {
 		defer close(eventChannel)
