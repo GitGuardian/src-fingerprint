@@ -1,0 +1,86 @@
+run:
+  tests: false
+
+linters:
+  enable:
+    - bodyclose
+    - deadcode
+    - depguard
+    - dogsled
+    - dupl
+    - errcheck
+    - funlen
+    - gochecknoinits
+    - goconst
+    - gocritic
+    - gocyclo
+    - gofmt
+    - goimports
+    - golint
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - interfacer
+    - lll
+    - misspell
+    - nakedret
+    - scopelint
+    - staticcheck
+    - structcheck
+    - stylecheck
+    - typecheck
+    - unconvert
+    - unparam
+    - unused
+    - varcheck
+    - whitespace
+  disable:
+    - gochecknoglobals
+    - goerr113
+    - wrapcheck
+    - exhaustivestruct
+    - errorlint
+  disable-all: false
+  presets:
+    - bugs
+    - unused
+    - performance
+    - format
+    - style
+  fast: false
+
+linters-settings:
+  govet:
+    check-shadowing: true
+  golint:
+    min-confidence: 0
+  gocyclo:
+    min-complexity: 15
+  maligned:
+    suggest-new: true
+  dupl:
+    threshold: 100
+  goconst:
+    min-len: 2
+    min-occurrences: 2
+  misspell:
+    locale: US
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - experimental
+      - opinionated
+      - performance
+      - style
+  funlen:
+    lines: 100
+    statements: 50
+
+issues:
+  exclude:
+    - "G402:" # Insecure TLS Config
+    - "G404:"
+    - "`Mapping` is a global variable"
+    - "mnd: Magic number: 1, in <argument> detected"
+    - "mnd: Magic number: 2, in <argument> detected"

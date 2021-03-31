@@ -1,3 +1,0 @@
-{
-        "Enable": ["goimports","gosec", "staticcheck"]
-}
