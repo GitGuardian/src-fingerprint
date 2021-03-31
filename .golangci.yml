@@ -9,11 +9,8 @@ linters:
     - dogsled
     - dupl
     - errcheck
-    - funlen
     - gochecknoinits
     - goconst
-    - gocritic
-    - gocyclo
     - gofmt
     - goimports
     - golint
@@ -41,6 +38,11 @@ linters:
     - wrapcheck
     - exhaustivestruct
     - errorlint
+    # temporary disables
+    - gocritic
+    - gofumpt
+    - funlen
+    - gocyclo
   disable-all: false
   presets:
     - bugs

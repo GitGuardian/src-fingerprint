@@ -6,9 +6,9 @@ import (
 	git "gopkg.in/src-d/go-git.v4"
 )
 
-// GitRepository represents a git repository for the Extractor
+// GitRepository represents a git repository for the Extractor.
 type GitRepository interface {
-	// GetName is the name of the repository
+	// GetName is the name of the repository.
 	GetName() string
 
 	// GetSSHUrl is the SSH Url of the repository.
@@ -33,7 +33,7 @@ type Provider interface {
 	CloneRepository(cloner Cloner, repository GitRepository) (*git.Repository, error)
 }
 
-// ProviderOptions represents options for the Provider
+// ProviderOptions represents options for the Provider.
 type ProviderOptions struct {
 	// OmitForks will tell the Provider to omit fork repositories
 	OmitForks bool

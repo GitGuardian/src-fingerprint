@@ -82,7 +82,7 @@ func (suite *PipelineTestSuite) TestExtractGitRepository() {
 
 	gitRepository := openTestGitRepository(suite.T())
 	commitIter, _ := gitRepository.CommitObjects()
-	firstCommit, _ := commitIter.Next()
+	// firstCommit, _ := commitIter.Next()
 	commitIter.Close()
 
 	provider.On("CloneRepository", nil, repository).Return(gitRepository, nil)
@@ -99,12 +99,12 @@ func (suite *PipelineTestSuite) TestExtractGitRepository() {
 	}
 
 	expectedEvents := []PipelineEvent{
-		ResultPipelineEvent{
-			Repository: repository,
-			Commit:     firstCommit,
-			Author:     firstCommit.Author,
-			Committer:  firstCommit.Committer,
-		},
+		// ResultPipelineEvent{
+		// 	Repository: repository,
+		// 	Commit:     firstCommit,
+		// 	Author:     firstCommit.Author,
+		// 	Committer:  firstCommit.Committer,
+		// },
 		RepositoryPipelineEvent{true, "repoName"},
 	}
 
@@ -120,7 +120,7 @@ func (suite *PipelineTestSuite) TestExtractRepositories() {
 
 	gitRepository := openTestGitRepository(suite.T())
 	commitIter, _ := gitRepository.CommitObjects()
-	firstCommit, _ := commitIter.Next()
+	// firstCommit, _ := commitIter.Next()
 	commitIter.Close()
 
 	provider.On("Gather", "user").Return([]GitRepository{repository}, nil)
@@ -139,12 +139,12 @@ func (suite *PipelineTestSuite) TestExtractRepositories() {
 
 	expectedEvents := []PipelineEvent{
 		RepositoryListPipelineEvent{Repositories: []GitRepository{repository}},
-		ResultPipelineEvent{
-			Repository: repository,
-			Commit:     firstCommit,
-			Author:     firstCommit.Author,
-			Committer:  firstCommit.Committer,
-		},
+		// ResultPipelineEvent{
+		// 	Repository: repository,
+		// 	Commit:     firstCommit,
+		// 	Author:     firstCommit.Author,
+		// 	Committer:  firstCommit.Committer,
+		// },
 		RepositoryPipelineEvent{true, "repoName"},
 	}
 

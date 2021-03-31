@@ -2,12 +2,12 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
-	"flag"
-	"fmt"
 	"dnacollector"
 	"dnacollector/github"
 	"dnacollector/gitlab"
+	"encoding/json"
+	"flag"
+	"fmt"
 	"io"
 	"os"
 	"time"
@@ -42,21 +42,23 @@ type authorInfo struct {
 }
 
 type AugmentedGitFile struct {
-
 	RepositoryName string `json:"repository_name"`
 	dnacollector.GitFile
 }
 
 func main() {
 	var (
-		verbose        = flag.Bool("verbose", false, "set to add verbose logging")
-		extractForks   = flag.Bool("extract-forks", false, "set to extract fork repositories when possible")
-		inMemory       = flag.Bool("in-memory", false, "set to clone git repositories in memory. If not set, repositories are cloned in a temporary folder")
+		verbose      = flag.Bool("verbose", false, "set to add verbose logging")
+		extractForks = flag.Bool("extract-forks", false, "set to extract fork repositories when possible")
+		inMemory     = flag.Bool("in-memory", false,
+			"set to clone git repositories in memory. If not set, repositories are cloned in a temporary folder")
 		outputFilename = flag.String("output", "-", "set to change output. \"-\" means standard output")
 		prettyPrint    = flag.Bool("pretty", false, "set to pretty print to output file")
 		clonersCount   = flag.Int("cloners", 10, "set to change the number of cloners. More cloners means more memory usage")
-		providerURL    = flag.String("provider-url", "", "Base URL of the Git provider API. If not set, defaults URL are used.")
+		providerURL    = flag.String("provider-url", "",
+			"Base URL of the Git provider API. If not set, defaults URL are used.")
 	)
+
 	conf := config{}
 
 	if err := env.Parse(&conf); err != nil {
@@ -79,13 +81,16 @@ func main() {
 	}
 
 	output := os.Stdout
+
 	if *outputFilename != "-" {
 		changedOutput, err := os.Create(*outputFilename)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Could not open output file: %v\n", err)
 			os.Exit(1)
 		}
+
 		output = changedOutput
+
 		defer output.Close()
 	}
 
@@ -101,14 +106,18 @@ func main() {
 		OmitForks: !*extractForks,
 		BaseURL:   *providerURL,
 	}
+
 	var provider dnacollector.Provider
+
 	switch providerStr {
 	case "github":
 		provider = github.NewProvider(conf.GithubToken, providerOptions)
 	case "gitlab":
 		provider = gitlab.NewProvider(conf.GitlabToken, providerOptions)
 	default:
-		log.Fatalf("unknown provider: %v\n", provider)
+		log.Errorln("unknown provider", provider)
+
+		return
 	}
 
 	pipeline := dnacollector.Pipeline{
@@ -125,10 +134,10 @@ func main() {
 
 	// runtime stats
 	var (
-		totalRepo    int
-		doneRepo     int
-		authors      map[string]*authorInfo
-		commitsCount int
+		totalRepo     int
+		doneRepo      int
+		authors       map[string]*authorInfo
+		commitsCount  int
 		gitFilesCount int
 	)
 
@@ -167,7 +176,6 @@ loop:
 			case dnacollector.ResultGitFilePipelineEvent:
 				gitFilesCount++
 				gitFilesArray = append(gitFilesArray, &AugmentedGitFile{typedEvent.Repository.GetName(), *typedEvent.GitFile})
-
 			}
 		case <-ticker:
 			if totalRepo == 0 {
@@ -195,6 +203,7 @@ loop:
 		jsonBytes []byte
 		err       error
 	)
+
 	if *prettyPrint {
 		jsonBytes, err = json.MarshalIndent(gitFilesArray, "", "\t")
 	} else {
@@ -202,11 +211,16 @@ loop:
 	}
 
 	if err != nil {
-		log.Fatalf("Could not marshal result to JSON: %v\n", err)
+		log.Errorln("Could not marshal result to JSON", err)
+
+		return
 	}
 
 	if _, err = io.Copy(output, bytes.NewReader(jsonBytes)); err != nil {
-		log.Fatalf("Could not save output: %v\n", err)
+		log.Errorln("Could not save output", err)
+
+		return
 	}
+
 	log.Infof("Done")
 }

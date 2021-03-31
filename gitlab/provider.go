@@ -14,11 +14,11 @@ import (
 )
 
 const (
-	// DefaultGithubAPIURL is the default API URL
+	// DefaultGithubAPIURL is the default API URL.
 	DefaultGitLabAPIURL = "https://gitlab.com/api/v4"
 )
 
-// Repository represents a Gitlab repository
+// Repository represents a Gitlab repository.
 type Repository struct {
 	name        string
 	sshURL      string
@@ -27,27 +27,25 @@ type Repository struct {
 	storageSize int64
 }
 
-var (
-	// ErrGroupNotFound is the error returned when group can not be found
-	ErrGroupNotFound = errors.New("group not found")
-)
+// ErrGroupNotFound is the error returned when group can not be found.
+var ErrGroupNotFound = errors.New("group not found")
 
-// GetName returns the name of the repository
-func (r Repository) GetName() string { return r.name }
+// GetName returns the name of the repository.
+func (r *Repository) GetName() string { return r.name }
 
-// GetSSHUrl returns the SSH URL of the repository
-func (r Repository) GetSSHUrl() string { return r.sshURL }
+// GetSSHUrl returns the SSH URL of the repository.
+func (r *Repository) GetSSHUrl() string { return r.sshURL }
 
-// GetHTTPUrl returns the HTTP URL of the repository
-func (r Repository) GetHTTPUrl() string { return r.httpURL }
+// GetHTTPUrl returns the HTTP URL of the repository.
+func (r *Repository) GetHTTPUrl() string { return r.httpURL }
 
-// GetCreatedAt returns the creation time of the repository
-func (r Repository) GetCreatedAt() time.Time { return r.createdAt }
+// GetCreatedAt returns the creation time of the repository.
+func (r *Repository) GetCreatedAt() time.Time { return r.createdAt }
 
-// GetStorageSize returns the storage size of the repository
-func (r Repository) GetStorageSize() int64 { return r.storageSize }
+// GetStorageSize returns the storage size of the repository.
+func (r *Repository) GetStorageSize() int64 { return r.storageSize }
 
-// Provider represents a Gitlab Provider. It can gather the list of repositories a given user
+// Provider represents a Gitlab Provider. It can gather the list of repositories a given user.
 type Provider struct {
 	token   string
 	client  *gitlab.Client
@@ -55,19 +53,18 @@ type Provider struct {
 }
 
 // NewProvider  creates a Provider given a token.
-// If accessing private repositories, token must not be empty
+// If accessing private repositories, token must not be empty.
 func NewProvider(token string, options dnacollector.ProviderOptions) *Provider {
 	GitLabBaseURL := DefaultGitLabAPIURL
 	if options.BaseURL != "" {
 		GitLabBaseURL = options.BaseURL
-		//if err != nil {
-		//	panic(fmt.Sprintf("could not set base URL for gitlab client: %v", err))
-		//}
 	}
+
 	client, err := gitlab.NewClient(token, gitlab.WithBaseURL(GitLabBaseURL))
 	if err != nil {
 		panic(fmt.Sprintf("could not set base URL for gitlab client: %v", err))
 	}
+
 	return &Provider{
 		token:   token,
 		client:  client,
@@ -82,6 +79,7 @@ func createFromGitlabRepo(r *gitlab.Project) *Repository {
 	if r.Statistics != nil {
 		storageSize = r.Statistics.RepositorySize
 	}
+
 	return &Repository{
 		name:        r.Name,
 		sshURL:      r.SSHURLToRepo,
@@ -106,12 +104,15 @@ func (p *Provider) gatherPage(page int) ([]dnacollector.GitRepository, error) {
 	}
 
 	repositories := make([]dnacollector.GitRepository, 0, len(repos))
+
 	for _, repo := range repos {
 		if p.options.OmitForks && repo.ForkedFromProject != nil {
 			continue
 		}
+
 		repositories = append(repositories, createFromGitlabRepo(repo))
 	}
+
 	return repositories, nil
 }
 
@@ -126,10 +127,11 @@ func (p *Provider) findGroup(name string) (int, error) {
 	if len(groups) < 1 {
 		return 0, ErrGroupNotFound
 	}
+
 	return groups[0].ID, nil
 }
 
-// Gather gathers user's repositories for the configured token
+// Gather gathers user's repositories for the configured token.
 func (p *Provider) Gather(user string) ([]dnacollector.GitRepository, error) {
 	log.Debugf("Gathering repositories for user %s\n", user)
 
@@ -144,6 +146,7 @@ func (p *Provider) Gather(user string) ([]dnacollector.GitRepository, error) {
 			Page:    1,
 		},
 	}
+
 	repos, resp, err := p.client.Groups.ListGroupProjects(groupID, opt)
 	if err != nil {
 		return nil, err
@@ -155,24 +158,24 @@ func (p *Provider) Gather(user string) ([]dnacollector.GitRepository, error) {
 
 	wg := sync.WaitGroup{}
 
-	var (
-		mu sync.Mutex
-		// repositories protected by mu, since multiple goroutines will access it
-		repositories []dnacollector.GitRepository
-	)
+	var mu sync.Mutex
 
-	repositories = make([]dnacollector.GitRepository, 0, pagesCount*reposPerPage)
+	// repositories protected by mu, since multiple goroutines will access it
+	repositories := make([]dnacollector.GitRepository, 0, pagesCount*reposPerPage)
 	for _, repo := range repos {
 		repositories = append(repositories, createFromGitlabRepo(repo))
 	}
+
 	for pageCount := 1; pageCount <= pagesCount; pageCount++ {
 		wg.Add(1)
+
 		go func(page int) {
 			defer wg.Done()
 
 			pageRepositories, err := p.gatherPage(page)
 			if err != nil {
 				log.Errorf("Error gathering page %v:%v\n", page, err)
+
 				return
 			}
 
@@ -187,8 +190,10 @@ func (p *Provider) Gather(user string) ([]dnacollector.GitRepository, error) {
 	return repositories, nil
 }
 
-// CloneRepository clones a Gitlab repository given the token. The token must have the `read_repository` rights
-func (p *Provider) CloneRepository(cloner dnacollector.Cloner, repository dnacollector.GitRepository) (*git.Repository, error) {
+// CloneRepository clones a Gitlab repository given the token. The token must have the `read_repository` rights.
+func (p *Provider) CloneRepository(
+	cloner dnacollector.Cloner,
+	repository dnacollector.GitRepository) (*git.Repository, error) {
 	auth := &http.BasicAuth{
 		Username: p.token,
 		Password: p.token,

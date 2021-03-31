@@ -2,6 +2,7 @@ package main
 
 import (
 	"dnacollector"
+
 	"github.com/caarlos0/env"
 	log "github.com/sirupsen/logrus"
 	git2 "gopkg.in/src-d/go-git.v4"
@@ -20,8 +21,8 @@ func main() {
 
 	// Config log
 	log.SetFormatter(&log.TextFormatter{
-		DisableColors: true,
-		FullTimestamp: true,
+		DisableColors:   true,
+		FullTimestamp:   true,
 		TimestampFormat: "Jan _2 15:04:05.000000000",
 	})
 	log.SetReportCaller(true)
@@ -41,13 +42,15 @@ func main() {
 	if err != nil {
 		log.Panic(err)
 	}
+
 	extractor := dnacollector.NewFastExtractor()
 	extractor.Run(repository)
+
 	arrGitFiles := make([]*dnacollector.GitFile, 0)
 	for gitFile := range extractor.ChanGitFiles {
 		arrGitFiles = append(arrGitFiles, gitFile)
 		log.Debug(gitFile)
-
 	}
+
 	log.Infof("length of files collected %d", len(arrGitFiles))
 }
