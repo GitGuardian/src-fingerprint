@@ -4,6 +4,7 @@ import (
 	"dnacollector"
 	"errors"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -89,7 +90,7 @@ func createFromGitlabRepo(r *gitlab.Project) *Repository {
 	}
 }
 
-func (p *Provider) gatherPage(page int) ([]dnacollector.GitRepository, error) {
+func (p *Provider) gatherAccessiblePage(page int) ([]dnacollector.GitRepository, int, error) {
 	opt := &gitlab.ListProjectsOptions{
 		ListOptions: gitlab.ListOptions{
 			PerPage: reposPerPage, Page: page,
@@ -98,9 +99,9 @@ func (p *Provider) gatherPage(page int) ([]dnacollector.GitRepository, error) {
 
 	log.Infof("Gathering page %v for %v\n", page, p.client.BaseURL())
 
-	repos, _, err := p.client.Projects.ListProjects(opt)
+	repos, resp, err := p.client.Projects.ListProjects(opt)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	repositories := make([]dnacollector.GitRepository, 0, len(repos))
@@ -113,7 +114,34 @@ func (p *Provider) gatherPage(page int) ([]dnacollector.GitRepository, error) {
 		repositories = append(repositories, createFromGitlabRepo(repo))
 	}
 
-	return repositories, nil
+	return repositories, resp.TotalPages, nil
+}
+
+func (p *Provider) gatherGroupProjectPage(page int) ([]dnacollector.GitRepository, int, error) {
+	opt := &gitlab.ListProjectsOptions{
+		ListOptions: gitlab.ListOptions{
+			PerPage: reposPerPage, Page: page,
+		}, Statistics: gitlab.Bool(true),
+	}
+
+	log.Infof("Gathering page %v for %v\n", page, p.client.BaseURL())
+
+	repos, resp, err := p.client.Projects.ListProjects(opt)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	repositories := make([]dnacollector.GitRepository, 0, len(repos))
+
+	for _, repo := range repos {
+		if p.options.OmitForks && repo.ForkedFromProject != nil {
+			continue
+		}
+
+		repositories = append(repositories, createFromGitlabRepo(repo))
+	}
+
+	return repositories, resp.TotalPages, nil
 }
 
 func (p *Provider) findGroup(name string) (int, error) {
@@ -128,51 +156,50 @@ func (p *Provider) findGroup(name string) (int, error) {
 		return 0, ErrGroupNotFound
 	}
 
-	return groups[0].ID, nil
+	for _, group := range groups {
+		if strings.EqualFold(group.FullPath, name) {
+			return group.ID, nil
+		}
+	}
+
+	return 0, ErrGroupNotFound
 }
 
 // Gather gathers user's repositories for the configured token.
 func (p *Provider) Gather(user string) ([]dnacollector.GitRepository, error) {
 	log.Debugf("Gathering repositories for user %s\n", user)
 
-	groupID, err := p.findGroup(user)
-	if err != nil {
-		return nil, err
+	// repositories protected by mu, since multiple goroutines will access it
+	repositories := make([]dnacollector.GitRepository, 0)
+	if user != "" {
+		repositories = p.collectFromGroup(repositories, user)
+	} else {
+		repositories = p.collectAllAccessible(repositories)
 	}
 
-	opt := &gitlab.ListGroupProjectsOptions{
-		ListOptions: gitlab.ListOptions{
-			PerPage: reposPerPage,
-			Page:    1,
-		},
-	}
+	return repositories, nil
+}
 
-	repos, resp, err := p.client.Groups.ListGroupProjects(groupID, opt)
-	if err != nil {
-		return nil, err
-	}
-
-	pagesCount := resp.TotalPages
-
-	log.Infof("Gathering %v pages for %s\n", pagesCount, user)
-
+func (p *Provider) collectAllAccessible(
+	repositories []dnacollector.GitRepository) []dnacollector.GitRepository {
 	wg := sync.WaitGroup{}
 
 	var mu sync.Mutex
 
-	// repositories protected by mu, since multiple goroutines will access it
-	repositories := make([]dnacollector.GitRepository, 0, pagesCount*reposPerPage)
-	for _, repo := range repos {
-		repositories = append(repositories, createFromGitlabRepo(repo))
+	_, totalPages, err := p.gatherAccessiblePage(1)
+	if err != nil {
+		log.Errorf("Error gathering first page: %v\n", err)
+
+		return repositories
 	}
 
-	for pageCount := 1; pageCount <= pagesCount; pageCount++ {
+	for pageCount := 1; pageCount <= totalPages; pageCount++ {
 		wg.Add(1)
 
 		go func(page int) {
 			defer wg.Done()
 
-			pageRepositories, err := p.gatherPage(page)
+			pageRepositories, _, err := p.gatherAccessiblePage(page)
 			if err != nil {
 				log.Errorf("Error gathering page %v:%v\n", page, err)
 
@@ -187,7 +214,40 @@ func (p *Provider) Gather(user string) ([]dnacollector.GitRepository, error) {
 
 	wg.Wait()
 
-	return repositories, nil
+	return repositories
+}
+
+func (p *Provider) collectFromGroup(repositories []dnacollector.GitRepository,
+	user string) []dnacollector.GitRepository {
+	groupID, err := p.findGroup(user)
+	if err != nil {
+		log.Errorf("Error finding group: %v\n", err)
+
+		return repositories
+	}
+
+	opt := &gitlab.ListGroupProjectsOptions{
+		ListOptions: gitlab.ListOptions{
+			PerPage: reposPerPage,
+			Page:    1,
+		},
+	}
+
+	repos, resp, err := p.client.Groups.ListGroupProjects(groupID, opt)
+	if err != nil {
+		log.Errorf("Error gathering page: %v\n", err)
+
+		return repositories
+	}
+
+	pagesCount := resp.TotalPages
+	log.Infof("Gathering %v pages for %s\n", pagesCount, user)
+
+	for _, repo := range repos {
+		repositories = append(repositories, createFromGitlabRepo(repo))
+	}
+
+	return repositories
 }
 
 // CloneRepository clones a Gitlab repository given the token. The token must have the `read_repository` rights.
@@ -197,6 +257,11 @@ func (p *Provider) CloneRepository(
 	auth := &http.BasicAuth{
 		Username: p.token,
 		Password: p.token,
+	}
+
+	// If token doesn't exist, don't try to basic auth
+	if p.token == "" {
+		auth = nil
 	}
 
 	return cloner.CloneRepository(repository.GetHTTPUrl(), auth)
