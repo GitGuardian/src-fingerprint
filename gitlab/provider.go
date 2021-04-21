@@ -117,16 +117,17 @@ func (p *Provider) gatherAccessiblePage(page int) ([]dnacollector.GitRepository,
 	return repositories, resp.TotalPages, nil
 }
 
-func (p *Provider) gatherGroupProjectPage(page int) ([]dnacollector.GitRepository, int, error) {
-	opt := &gitlab.ListProjectsOptions{
+func (p *Provider) gatherGroupProjectPage(groupID, page int) ([]dnacollector.GitRepository, int, error) {
+	opt := &gitlab.ListGroupProjectsOptions{
 		ListOptions: gitlab.ListOptions{
-			PerPage: reposPerPage, Page: page,
-		}, Statistics: gitlab.Bool(true),
+			PerPage: reposPerPage,
+			Page:    page,
+		},
 	}
 
 	log.Infof("Gathering page %v for %v\n", page, p.client.BaseURL())
 
-	repos, resp, err := p.client.Projects.ListProjects(opt)
+	repos, resp, err := p.client.Groups.ListGroupProjects(groupID, opt)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -226,26 +227,37 @@ func (p *Provider) collectFromGroup(repositories []dnacollector.GitRepository,
 		return repositories
 	}
 
-	opt := &gitlab.ListGroupProjectsOptions{
-		ListOptions: gitlab.ListOptions{
-			PerPage: reposPerPage,
-			Page:    1,
-		},
-	}
+	wg := sync.WaitGroup{}
 
-	repos, resp, err := p.client.Groups.ListGroupProjects(groupID, opt)
+	var mu sync.Mutex
+
+	_, totalPages, err := p.gatherGroupProjectPage(groupID, 1)
 	if err != nil {
-		log.Errorf("Error gathering page: %v\n", err)
+		log.Errorf("Error gathering first page: %v\n", err)
 
 		return repositories
 	}
 
-	pagesCount := resp.TotalPages
-	log.Infof("Gathering %v pages for %s\n", pagesCount, user)
+	for pageCount := 1; pageCount <= totalPages; pageCount++ {
+		wg.Add(1)
 
-	for _, repo := range repos {
-		repositories = append(repositories, createFromGitlabRepo(repo))
+		go func(page int) {
+			defer wg.Done()
+
+			pageRepositories, _, err := p.gatherGroupProjectPage(groupID, page)
+			if err != nil {
+				log.Errorf("Error gathering page %v:%v\n", page, err)
+
+				return
+			}
+
+			mu.Lock()
+			repositories = append(repositories, pageRepositories...)
+			mu.Unlock()
+		}(pageCount)
 	}
+
+	wg.Wait()
 
 	return repositories
 }
