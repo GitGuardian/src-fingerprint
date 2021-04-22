@@ -105,6 +105,10 @@ func (fe *FastExtractor) Run(repository *git.Repository) chan *GitFile {
 		close(fe.ChanGitFiles)
 		log.Info("channel is closed")
 		log.Infof("finishing iterating over files, we have collected %d files", num)
+
+		if err := os.RemoveAll(path); err != nil {
+			log.Errorln("Unable to remove directory ", path)
+		}
 	}()
 
 	return fe.ChanGitFiles

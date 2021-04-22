@@ -29,10 +29,6 @@ type ResultGitFilePipelineEvent struct {
 	GitFile    *GitFile
 }
 
-// func (rgp *ResultGitFilePipelineEvent) ToJson() {
-//
-//}
-
 // RepositoryPipelineEvent represents an event from a repository.
 type RepositoryPipelineEvent struct {
 	// Finished is true if the given repository is pipeline is done
