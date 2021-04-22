@@ -37,9 +37,6 @@ func (e *Extractor) ExtractNextCommit() (*object.Commit, error) {
 	return e.iter.Next()
 }
 
-// FastExtractor will directly extract the information without using an Analyzer
-// There are designed to use raw git commands to get what is needed
-
 func GetBasePathGoGitRepo(r *git.Repository) (string, error) {
 	//
 	// Try to grab the repository Storer
@@ -57,19 +54,6 @@ func GetBasePathGoGitRepo(r *git.Repository) (string, error) {
 	return fs.Root(), nil
 }
 
-//type BaseGitFileIterator struct {
-//	repository *git.Repository
-//	filesChan  chan *GitFile
-//}
-//
-//func (i *BaseGitFileIterator) Compute(repository *git.Repositor) error {
-//
-//}
-//
-//func (i *BaseGitFileIterator) Close() error {
-//
-//}
-
 type BaseExtractor interface {
 	Next() (interface{}, error)
 }
@@ -85,6 +69,8 @@ func NewFastExtractor() *FastExtractor {
 	return &FastExtractor{make(chan *GitFile)}
 }
 
+// FastExtractor will directly extract the information without using an Analyzer
+// There are designed to use raw git commands to get what is needed.
 type FastExtractor struct {
 	ChanGitFiles chan *GitFile
 }
@@ -148,13 +134,3 @@ func (fe *FastExtractor) Run(repository *git.Repository) chan *GitFile {
 
 	return fe.ChanGitFiles
 }
-
-//targetFile := fe.BaseDirStorage + "/" + "sha_files.jsonl"
-//log.Infof("Saving to file %s", targetFile)
-//dataFile, err := os.Create(targetFile)
-//if err != nil {
-//	log.Error(err)
-//}
-//defer dataFile.Close()
-//_, err = dataFile.WriteString(out.String())
-//return err
