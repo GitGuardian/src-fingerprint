@@ -102,23 +102,6 @@ func (p *Pipeline) ExtractRepository(repository GitRepository, eventChan chan<- 
 
 	log.Infof("Cloned repo %v (size: %v KB)\n", repository.GetName(), repository.GetStorageSize())
 
-	// extractor, err := NewExtractor(gitRepository)
-	// if err != nil {
-	//	return err
-	// }
-	// for {
-	//	commit, err := extractor.ExtractNextCommit()
-	//	if err != nil && err != io.EOF {
-	//		return err
-	//	}
-	//	if commit == nil {
-	//		break
-	//	}
-	//
-	//	author, commiter := p.Analyzer.AnalyzeCommit(commit)
-	//	p.publishEvent(eventChan, ResultPipelineEvent{repository, commit, author, commiter})
-	// }
-
 	extractorGitFile := NewFastExtractor()
 	extractorGitFile.Run(gitRepository)
 
