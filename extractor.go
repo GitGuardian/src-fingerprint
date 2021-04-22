@@ -10,35 +10,10 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/src-d/go-billy.v4/helper/chroot"
 	git "gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/plumbing/object"
 	"gopkg.in/src-d/go-git.v4/storage/filesystem"
 )
 
-// Extractor extracts commits for a given repository.
-type Extractor struct {
-	iter object.CommitIter
-}
-
-// NewExtractor creates a new Extractor.
-func NewExtractor(repository *git.Repository) (*Extractor, error) {
-	iter, err := repository.CommitObjects()
-	if err != nil {
-		return nil, err
-	}
-
-	return &Extractor{
-		iter: iter,
-	}, nil
-}
-
-// ExtractNextCommit extract the next  commit of the repository.
-// It returns an io.EOF error if there are no more commits.
-func (e *Extractor) ExtractNextCommit() (*object.Commit, error) {
-	return e.iter.Next()
-}
-
 func GetBasePathGoGitRepo(r *git.Repository) (string, error) {
-	//
 	// Try to grab the repository Storer
 	s, ok := r.Storer.(*filesystem.Storage)
 	if !ok {
