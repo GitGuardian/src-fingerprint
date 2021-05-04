@@ -1,6 +1,8 @@
-package dnacollector
+package srcfingerprint
 
 import (
+	"srcfingerprint/cloner"
+	"srcfingerprint/provider"
 	"sync"
 
 	log "github.com/sirupsen/logrus"
@@ -13,19 +15,19 @@ type PipelineEvent interface{}
 // RepositoryListPipelineEvent is the event fired when the list of repositories has been gathered.
 type RepositoryListPipelineEvent struct {
 	// Repositories is the list of repositories
-	Repositories []GitRepository
+	Repositories []provider.GitRepository
 }
 
 // ResultCommitPipelineEvent represents the event for a result.
 type ResultCommitPipelineEvent struct {
-	Repository GitRepository
+	Repository provider.GitRepository
 	Commit     *object.Commit
 	Author     object.Signature
 	Committer  object.Signature
 }
 
 type ResultGitFilePipelineEvent struct {
-	Repository GitRepository
+	Repository provider.GitRepository
 	GitFile    *GitFile
 }
 
@@ -47,8 +49,8 @@ type CommitPipelineEvent struct {
 
 // Pipeline represents the whole extraction pipeline.
 type Pipeline struct {
-	Provider Provider
-	Cloner   Cloner
+	Provider provider.Provider
+	Cloner   cloner.Cloner
 	Analyzer *Analyzer
 
 	ClonersCount int
@@ -65,7 +67,7 @@ func (p *Pipeline) gather(
 	wg *sync.WaitGroup,
 	eventChan chan<- PipelineEvent,
 	user string,
-	output chan<- GitRepository) {
+	output chan<- provider.GitRepository) {
 	defer wg.Done()
 	defer close(output)
 
@@ -86,7 +88,7 @@ func (p *Pipeline) gather(
 }
 
 // ExtractRepository extracts for a single repository.
-func (p *Pipeline) ExtractRepository(repository GitRepository, eventChan chan<- PipelineEvent) error {
+func (p *Pipeline) ExtractRepository(repository provider.GitRepository, eventChan chan<- PipelineEvent) error {
 	defer p.publishEvent(eventChan, RepositoryPipelineEvent{true, repository.GetName()})
 
 	log.Infof("Cloning repo %v\n", repository.GetName())
@@ -118,7 +120,7 @@ const (
 func (p *Pipeline) ExtractRepositories(user string, eventChan chan<- PipelineEvent) {
 	log.Infof("Extracting user %v\n", user)
 
-	repositoryChannel := make(chan GitRepository)
+	repositoryChannel := make(chan provider.GitRepository)
 
 	extractionWorkersCount := p.ClonersCount
 	if extractionWorkersCount == 0 {

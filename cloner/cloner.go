@@ -1,4 +1,4 @@
-package dnacollector
+package cloner
 
 import (
 	"io/ioutil"

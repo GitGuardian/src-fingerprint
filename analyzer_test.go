@@ -1,7 +1,6 @@
-package dnacollector_test
+package srcfingerprint
 
 import (
-	"dnacollector"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -14,7 +13,7 @@ type AnalyzerTestSuite struct {
 }
 
 func (suite *AnalyzerTestSuite) TestAnalyzeCommit() {
-	analyzer := dnacollector.Analyzer{}
+	analyzer := Analyzer{}
 	commit := &object.Commit{
 		Author: object.Signature{
 			Name:  "Author",

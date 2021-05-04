@@ -1,4 +1,4 @@
-module dnacollector
+module srcfingerprint
 
 go 1.15
 
@@ -10,11 +10,11 @@ require (
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/kevinburke/ssh_config v1.1.0 // indirect
-	github.com/ldez/go-git-cmd-wrapper/v2 v2.0.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
+	github.com/suhaibmujahid/go-bitbucket-server v0.1.0
 	github.com/urfave/cli/v2 v2.3.0
 	github.com/xanzy/go-gitlab v0.48.0
 	github.com/xanzy/ssh-agent v0.3.0 // indirect

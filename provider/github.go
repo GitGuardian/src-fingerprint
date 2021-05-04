@@ -1,12 +1,11 @@
-package github
+package provider
 
 import (
 	"context"
-	"dnacollector"
 	"fmt"
 	"net/url"
+	"srcfingerprint/cloner"
 	"sync"
-	"time"
 
 	"github.com/google/go-github/github"
 	log "github.com/sirupsen/logrus"
@@ -20,34 +19,10 @@ const (
 	DefaultGithubAPIURL = "https://api.github.com/"
 )
 
-// Repository represents a Github repository.
-type Repository struct {
-	name        string
-	sshURL      string
-	httpURL     string
-	createdAt   time.Time
-	storageSize int64
-}
-
-// GetName returns the name of the repository.
-func (r *Repository) GetName() string { return r.name }
-
-// GetSSHUrl returns the SSH URL of the repository.
-func (r *Repository) GetSSHUrl() string { return r.sshURL }
-
-// GetHTTPUrl returns the HTTP URL of the repository.
-func (r *Repository) GetHTTPUrl() string { return r.httpURL }
-
-// GetCreatedAt returns the creation time of the repository.
-func (r *Repository) GetCreatedAt() time.Time { return r.createdAt }
-
-// GetStorageSize returns the storage size of the repository.
-func (r *Repository) GetStorageSize() int64 { return r.storageSize }
-
 // Provider is capable of gathering Github repositories from an org.
-type Provider struct {
+type GitHubProvider struct {
 	client  *github.Client
-	options dnacollector.ProviderOptions
+	options Options
 	token   string
 }
 
@@ -61,10 +36,8 @@ func createFromGithubRepo(r *github.Repository) *Repository {
 	}
 }
 
-const reposPerPage = 100
-
 // NewProvider creates a new Github Provider.
-func NewProvider(token string, options dnacollector.ProviderOptions) *Provider {
+func NewGitHubProvider(token string, options Options) Provider {
 	client := github.NewClient(oauth2.NewClient(
 		context.TODO(),
 		oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token}),
@@ -79,14 +52,14 @@ func NewProvider(token string, options dnacollector.ProviderOptions) *Provider {
 		client.BaseURL = baseParsedURL
 	}
 
-	return &Provider{
+	return &GitHubProvider{
 		client:  client,
 		options: options,
 		token:   token,
 	}
 }
 
-func (p *Provider) gatherPage(user string, page int) ([]dnacollector.GitRepository, error) {
+func (p *GitHubProvider) gatherPage(user string, page int) ([]GitRepository, error) {
 	opt := &github.RepositoryListByOrgOptions{
 		ListOptions: github.ListOptions{
 			PerPage: reposPerPage, Page: page,
@@ -100,7 +73,7 @@ func (p *Provider) gatherPage(user string, page int) ([]dnacollector.GitReposito
 		return nil, err
 	}
 
-	repositories := make([]dnacollector.GitRepository, 0, len(repos))
+	repositories := make([]GitRepository, 0, len(repos))
 
 	for _, repo := range repos {
 		if p.options.OmitForks && repo.GetFork() {
@@ -114,7 +87,7 @@ func (p *Provider) gatherPage(user string, page int) ([]dnacollector.GitReposito
 }
 
 // Gather gather user's git repositories and send them to outputChannel.
-func (p *Provider) Gather(user string) ([]dnacollector.GitRepository, error) {
+func (p *GitHubProvider) Gather(user string) ([]GitRepository, error) {
 	log.Debugf("Gathering repositories for Github org %s\n", user)
 
 	opt := &github.RepositoryListByOrgOptions{
@@ -137,7 +110,7 @@ func (p *Provider) Gather(user string) ([]dnacollector.GitRepository, error) {
 	var mu sync.Mutex
 
 	// repositories protected by mu, since multiple goroutines will access it
-	repositories := make([]dnacollector.GitRepository, 0, pagesCount*reposPerPage)
+	repositories := make([]GitRepository, 0, pagesCount*reposPerPage)
 	for _, repo := range repos {
 		repositories = append(repositories, createFromGithubRepo(repo))
 	}
@@ -167,8 +140,8 @@ func (p *Provider) Gather(user string) ([]dnacollector.GitRepository, error) {
 }
 
 // CloneRepository clones a Github repository given the token. The token must have the `read_repository` rights.
-func (p *Provider) CloneRepository(cloner dnacollector.Cloner,
-	repository dnacollector.GitRepository) (*git.Repository, error) {
+func (p *GitHubProvider) CloneRepository(cloner cloner.Cloner,
+	repository GitRepository) (*git.Repository, error) {
 	auth := &http.BasicAuth{
 		Username: p.token,
 		Password: p.token,

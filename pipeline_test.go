@@ -1,7 +1,9 @@
-package dnacollector
+package srcfingerprint
 
 import (
 	"path/filepath"
+	"srcfingerprint/cloner"
+	"srcfingerprint/provider"
 	"sync"
 	"testing"
 	"time"
@@ -20,12 +22,12 @@ type ProviderMock struct {
 	mock.Mock
 }
 
-func (mock *ProviderMock) Gather(user string) ([]GitRepository, error) {
+func (mock *ProviderMock) Gather(user string) ([]provider.GitRepository, error) {
 	args := mock.Called(user)
-	return args.Get(0).([]GitRepository), args.Error(1)
+	return args.Get(0).([]provider.GitRepository), args.Error(1)
 }
 
-func (mock *ProviderMock) CloneRepository(cloner Cloner, repository GitRepository) (*git.Repository, error) {
+func (mock *ProviderMock) CloneRepository(cloner cloner.Cloner, repository provider.GitRepository) (*git.Repository, error) {
 	args := mock.Called(cloner, repository)
 	return args.Get(0).(*git.Repository), args.Error(1)
 }
@@ -38,7 +40,7 @@ func (m gitRepositoryMock) GetHTTPUrl() string      { return "" }
 func (m gitRepositoryMock) GetCreatedAt() time.Time { return time.Unix(0, 0) }
 func (m gitRepositoryMock) GetStorageSize() int64   { return 0 }
 
-func createGitRepository(name string) GitRepository {
+func createGitRepository(name string) provider.GitRepository {
 	return gitRepositoryMock{name: name}
 }
 
@@ -52,26 +54,26 @@ func openTestGitRepository(t *testing.T) *git.Repository {
 }
 
 func (suite *PipelineTestSuite) TestGather() {
-	outputChan := make(chan GitRepository)
+	outputChan := make(chan provider.GitRepository)
 	wg := &sync.WaitGroup{}
-	provider := &ProviderMock{}
+	providerMock := &ProviderMock{}
 	pipeline := Pipeline{
-		Provider: provider,
+		Provider: providerMock,
 	}
 
-	provider.On("Gather", "user").Return([]GitRepository{createGitRepository("1")}, nil)
+	providerMock.On("Gather", "user").Return([]provider.GitRepository{createGitRepository("1")}, nil)
 
 	wg.Add(1)
 	go pipeline.gather(wg, nil, "user", outputChan)
 
-	repositories := make([]GitRepository, 0, 2)
+	repositories := make([]provider.GitRepository, 0, 2)
 	for output := range outputChan {
 		repositories = append(repositories, output)
 	}
 	wg.Wait()
 
-	provider.AssertExpectations(suite.T())
-	assert.Equal(suite.T(), []GitRepository{gitRepositoryMock{name: "1"}}, repositories)
+	providerMock.AssertExpectations(suite.T())
+	assert.Equal(suite.T(), []provider.GitRepository{gitRepositoryMock{name: "1"}}, repositories)
 }
 
 func (suite *PipelineTestSuite) TestExtractGitRepository() {
@@ -116,17 +118,17 @@ func (suite *PipelineTestSuite) TestExtractGitRepository() {
 func (suite *PipelineTestSuite) TestExtractRepositories() {
 	suite.T().Skip("Skip until repository is stable") // Skip for now
 	eventChan := make(chan PipelineEvent)
-	provider := &ProviderMock{}
+	providerMock := &ProviderMock{}
 	repository := createGitRepository("repoName")
-	pipeline := Pipeline{Provider: provider}
+	pipeline := Pipeline{Provider: providerMock}
 
 	gitRepository := openTestGitRepository(suite.T())
 	commitIter, _ := gitRepository.CommitObjects()
 	// firstCommit, _ := commitIter.Next()
 	commitIter.Close()
 
-	provider.On("Gather", "user").Return([]GitRepository{repository}, nil)
-	provider.On("CloneRepository", nil, repository).Return(gitRepository, nil)
+	providerMock.On("Gather", "user").Return([]provider.GitRepository{repository}, nil)
+	providerMock.On("CloneRepository", nil, repository).Return(gitRepository, nil)
 
 	go func() {
 		defer close(eventChan)
@@ -140,7 +142,7 @@ func (suite *PipelineTestSuite) TestExtractRepositories() {
 	}
 
 	expectedEvents := []PipelineEvent{
-		RepositoryListPipelineEvent{Repositories: []GitRepository{repository}},
+		RepositoryListPipelineEvent{Repositories: []provider.GitRepository{repository}},
 		// ResultPipelineEvent{
 		// 	Repository: repository,
 		// 	Commit:     firstCommit,
@@ -150,7 +152,7 @@ func (suite *PipelineTestSuite) TestExtractRepositories() {
 		RepositoryPipelineEvent{true, "repoName"},
 	}
 
-	provider.AssertExpectations(suite.T())
+	providerMock.AssertExpectations(suite.T())
 	assert.Equal(suite.T(), expectedEvents, events)
 }
 

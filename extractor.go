@@ -1,4 +1,4 @@
-package dnacollector
+package srcfingerprint
 
 import (
 	"bufio"

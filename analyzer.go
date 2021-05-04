@@ -1,4 +1,4 @@
-package dnacollector
+package srcfingerprint
 
 import (
 	git "gopkg.in/src-d/go-git.v4/plumbing/object"

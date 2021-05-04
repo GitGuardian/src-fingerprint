@@ -1,12 +1,11 @@
-package gitlab
+package provider
 
 import (
-	"dnacollector"
 	"errors"
 	"fmt"
+	"srcfingerprint/cloner"
 	"strings"
 	"sync"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 	gitlab "github.com/xanzy/go-gitlab"
@@ -19,43 +18,19 @@ const (
 	DefaultGitLabAPIURL = "https://gitlab.com/api/v4"
 )
 
-// Repository represents a Gitlab repository.
-type Repository struct {
-	name        string
-	sshURL      string
-	httpURL     string
-	createdAt   time.Time
-	storageSize int64
-}
-
 // ErrGroupNotFound is the error returned when group can not be found.
 var ErrGroupNotFound = errors.New("group not found")
 
-// GetName returns the name of the repository.
-func (r *Repository) GetName() string { return r.name }
-
-// GetSSHUrl returns the SSH URL of the repository.
-func (r *Repository) GetSSHUrl() string { return r.sshURL }
-
-// GetHTTPUrl returns the HTTP URL of the repository.
-func (r *Repository) GetHTTPUrl() string { return r.httpURL }
-
-// GetCreatedAt returns the creation time of the repository.
-func (r *Repository) GetCreatedAt() time.Time { return r.createdAt }
-
-// GetStorageSize returns the storage size of the repository.
-func (r *Repository) GetStorageSize() int64 { return r.storageSize }
-
 // Provider represents a Gitlab Provider. It can gather the list of repositories a given user.
-type Provider struct {
+type GitLabProvider struct {
 	token   string
 	client  *gitlab.Client
-	options dnacollector.ProviderOptions
+	options Options
 }
 
 // NewProvider  creates a Provider given a token.
 // If accessing private repositories, token must not be empty.
-func NewProvider(token string, options dnacollector.ProviderOptions) *Provider {
+func NewGitLabProvider(token string, options Options) Provider {
 	GitLabBaseURL := DefaultGitLabAPIURL
 	if options.BaseURL != "" {
 		GitLabBaseURL = options.BaseURL
@@ -66,14 +41,12 @@ func NewProvider(token string, options dnacollector.ProviderOptions) *Provider {
 		panic(fmt.Sprintf("could not set base URL for gitlab client: %v", err))
 	}
 
-	return &Provider{
+	return &GitLabProvider{
 		token:   token,
 		client:  client,
 		options: options,
 	}
 }
-
-const reposPerPage = 100
 
 func createFromGitlabRepo(r *gitlab.Project) *Repository {
 	storageSize := int64(0)
@@ -90,7 +63,7 @@ func createFromGitlabRepo(r *gitlab.Project) *Repository {
 	}
 }
 
-func (p *Provider) gatherAccessiblePage(page int) ([]dnacollector.GitRepository, int, error) {
+func (p *GitLabProvider) gatherAccessiblePage(page int) ([]GitRepository, int, error) {
 	opt := &gitlab.ListProjectsOptions{
 		ListOptions: gitlab.ListOptions{
 			PerPage: reposPerPage, Page: page,
@@ -104,7 +77,7 @@ func (p *Provider) gatherAccessiblePage(page int) ([]dnacollector.GitRepository,
 		return nil, 0, err
 	}
 
-	repositories := make([]dnacollector.GitRepository, 0, len(repos))
+	repositories := make([]GitRepository, 0, len(repos))
 
 	for _, repo := range repos {
 		if p.options.OmitForks && repo.ForkedFromProject != nil {
@@ -117,7 +90,7 @@ func (p *Provider) gatherAccessiblePage(page int) ([]dnacollector.GitRepository,
 	return repositories, resp.TotalPages, nil
 }
 
-func (p *Provider) gatherGroupProjectPage(groupID, page int) ([]dnacollector.GitRepository, int, error) {
+func (p *GitLabProvider) gatherGroupProjectPage(groupID, page int) ([]GitRepository, int, error) {
 	opt := &gitlab.ListGroupProjectsOptions{
 		ListOptions: gitlab.ListOptions{
 			PerPage: reposPerPage,
@@ -132,7 +105,7 @@ func (p *Provider) gatherGroupProjectPage(groupID, page int) ([]dnacollector.Git
 		return nil, 0, err
 	}
 
-	repositories := make([]dnacollector.GitRepository, 0, len(repos))
+	repositories := make([]GitRepository, 0, len(repos))
 
 	for _, repo := range repos {
 		if p.options.OmitForks && repo.ForkedFromProject != nil {
@@ -145,7 +118,7 @@ func (p *Provider) gatherGroupProjectPage(groupID, page int) ([]dnacollector.Git
 	return repositories, resp.TotalPages, nil
 }
 
-func (p *Provider) findGroup(name string) (int, error) {
+func (p *GitLabProvider) findGroup(name string) (int, error) {
 	groups, _, err := p.client.Groups.ListGroups(&gitlab.ListGroupsOptions{
 		Search: &name,
 	})
@@ -167,11 +140,11 @@ func (p *Provider) findGroup(name string) (int, error) {
 }
 
 // Gather gathers user's repositories for the configured token.
-func (p *Provider) Gather(user string) ([]dnacollector.GitRepository, error) {
+func (p *GitLabProvider) Gather(user string) ([]GitRepository, error) {
 	log.Debugf("Gathering repositories for user %s\n", user)
 
 	// repositories protected by mu, since multiple goroutines will access it
-	repositories := make([]dnacollector.GitRepository, 0)
+	repositories := make([]GitRepository, 0)
 	if user != "" {
 		repositories = p.collectFromGroup(repositories, user)
 	} else {
@@ -181,8 +154,8 @@ func (p *Provider) Gather(user string) ([]dnacollector.GitRepository, error) {
 	return repositories, nil
 }
 
-func (p *Provider) collectAllAccessible(
-	repositories []dnacollector.GitRepository) []dnacollector.GitRepository {
+func (p *GitLabProvider) collectAllAccessible(
+	repositories []GitRepository) []GitRepository {
 	wg := sync.WaitGroup{}
 
 	var mu sync.Mutex
@@ -218,8 +191,8 @@ func (p *Provider) collectAllAccessible(
 	return repositories
 }
 
-func (p *Provider) collectFromGroup(repositories []dnacollector.GitRepository,
-	user string) []dnacollector.GitRepository {
+func (p *GitLabProvider) collectFromGroup(repositories []GitRepository,
+	user string) []GitRepository {
 	groupID, err := p.findGroup(user)
 	if err != nil {
 		log.Errorf("Error finding group: %v\n", err)
@@ -263,9 +236,9 @@ func (p *Provider) collectFromGroup(repositories []dnacollector.GitRepository,
 }
 
 // CloneRepository clones a Gitlab repository given the token. The token must have the `read_repository` rights.
-func (p *Provider) CloneRepository(
-	cloner dnacollector.Cloner,
-	repository dnacollector.GitRepository) (*git.Repository, error) {
+func (p *GitLabProvider) CloneRepository(
+	cloner cloner.Cloner,
+	repository GitRepository) (*git.Repository, error) {
 	auth := &http.BasicAuth{
 		Username: p.token,
 		Password: p.token,

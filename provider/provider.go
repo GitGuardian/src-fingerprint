@@ -1,7 +1,9 @@
-package dnacollector
+package provider
 
 import (
 	"time"
+
+	"srcfingerprint/cloner"
 
 	git "gopkg.in/src-d/go-git.v4"
 )
@@ -30,11 +32,11 @@ type Provider interface {
 	// from the provider.
 	Gather(user string) ([]GitRepository, error)
 
-	CloneRepository(cloner Cloner, repository GitRepository) (*git.Repository, error)
+	CloneRepository(cloner cloner.Cloner, repository GitRepository) (*git.Repository, error)
 }
 
-// ProviderOptions represents options for the Provider.
-type ProviderOptions struct {
+// Options represents options for the Provider.
+type Options struct {
 	// OmitForks will tell the Provider to omit fork repositories
 	OmitForks bool
 
