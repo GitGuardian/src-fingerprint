@@ -25,3 +25,4 @@
 /testdata
 src-fingerprint
 .cache_ggshield
+dist/

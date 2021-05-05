@@ -6,7 +6,7 @@ BIN := src-fingerprint
 GO ?= go
 GOFLAGS := -v
 EXTRA_GOFLAGS ?=
-LDFLAGS := $(LDFLAGS)
+LDFLAGS := $(LDFLAGS) -X main.version=dev -X main.builtBy=makefile`
 SOURCES ?= $(shell find ./* -name "*.go" -type f ! -path "./vendor/*")
 
 .PHONY: default
