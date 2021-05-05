@@ -8,7 +8,7 @@ It supports 3 main on premise version control service:
 
 - GitHub Enterprise
 - Gitlab CE and EE
-- BitBucket (not supported yet)
+- Bitbucket
 
 ## Use the package
 

@@ -17,7 +17,7 @@ repository|org|group|instance|org)
 
 ## To Do
 
-- [ ] Support BitBucket
+- [x] Support Bitbucket
 - [ ] Implement a Redactor class to remove some data (repository name)
 - [x] Use cobra or other packages for the CLI
 - [ ] Implement CLI entry to scan a repo and not a full org.

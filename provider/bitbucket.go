@@ -40,7 +40,7 @@ func createFromBitbucketRepo(r *bitbucket.Repository) *Repository {
 		}
 	}
 
-	httpURL = strings.Replace(httpURL, "http", "https", 1)
+	httpURL = strings.Replace(httpURL, "http://", "https://", 1)
 
 	return &Repository{
 		name:        r.Name,
@@ -59,7 +59,7 @@ type AuthHeaderTransport struct {
 }
 
 func (at *AuthHeaderTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Add("Authorization", at.token)
+	req.Header.Add("Authorization", "Bearer "+at.token)
 	resp, err := at.T.RoundTrip(req)
 
 	if resp != nil && resp.Header.Get("x-auserid") != "" {
@@ -120,7 +120,7 @@ func (p *BitbucketProvider) gatherPage(start int, project string) ([]GitReposito
 		opt.ProjectName = project
 	}
 
-	log.Infof("Gathering page %v for %v\n", start, p.client.BaseURL())
+	log.Infof("Gathering page %v\n", start)
 
 	repos, resp, err := p.client.Repositories.List(context.Background(), opt)
 	if err != nil {
