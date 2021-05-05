@@ -118,7 +118,7 @@ It contains a Pipeline that extracts git information for every git artifact (cur
 The github package contains the implementation of the Github Provider.
 The gitlab package contains the implementation of the Gitlab Provider.
 
-The cmd/dna-collector package contains the binary code. It reads from CLI and environment the configuration and run the Pipeline on an organization.
+The cmd/src-fingerprint package contains the binary code. It reads from CLI and environment the configuration and run the Pipeline on an organization.
 
 ### Library we use
 
