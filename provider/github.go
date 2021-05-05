@@ -33,6 +33,7 @@ func createFromGithubRepo(r *github.Repository) *Repository {
 		httpURL:     r.GetHTMLURL(),
 		createdAt:   r.GetCreatedAt().Time,
 		storageSize: int64(r.GetSize()),
+		private:     r.GetPrivate(),
 	}
 }
 

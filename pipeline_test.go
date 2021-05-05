@@ -39,6 +39,7 @@ func (m gitRepositoryMock) GetSSHUrl() string       { return "" }
 func (m gitRepositoryMock) GetHTTPUrl() string      { return "" }
 func (m gitRepositoryMock) GetCreatedAt() time.Time { return time.Unix(0, 0) }
 func (m gitRepositoryMock) GetStorageSize() int64   { return 0 }
+func (m gitRepositoryMock) GetPrivate() bool        { return true }
 
 func createGitRepository(name string) provider.GitRepository {
 	return gitRepositoryMock{name: name}
@@ -108,7 +109,7 @@ func (suite *PipelineTestSuite) TestExtractGitRepository() {
 		// 	Author:     firstCommit.Author,
 		// 	Committer:  firstCommit.Committer,
 		// },
-		RepositoryPipelineEvent{true, "repoName"},
+		RepositoryPipelineEvent{true, true, "repoName"},
 	}
 
 	provider.AssertExpectations(suite.T())
@@ -149,7 +150,7 @@ func (suite *PipelineTestSuite) TestExtractRepositories() {
 		// 	Author:     firstCommit.Author,
 		// 	Committer:  firstCommit.Committer,
 		// },
-		RepositoryPipelineEvent{true, "repoName"},
+		RepositoryPipelineEvent{true, true, "repoName"},
 	}
 
 	providerMock.AssertExpectations(suite.T())

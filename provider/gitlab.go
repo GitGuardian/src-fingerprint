@@ -60,6 +60,7 @@ func createFromGitlabRepo(r *gitlab.Project) *Repository {
 		httpURL:     r.HTTPURLToRepo,
 		createdAt:   *r.CreatedAt,
 		storageSize: storageSize,
+		private:     !r.Public,
 	}
 }
 

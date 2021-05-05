@@ -35,6 +35,8 @@ type ResultGitFilePipelineEvent struct {
 type RepositoryPipelineEvent struct {
 	// Finished is true if the given repository is pipeline is done
 	Finished bool
+	// either the repository is private or not
+	Private bool
 	// RepositoryName is the name of the repository
 	RepositoryName string
 }
@@ -89,7 +91,7 @@ func (p *Pipeline) gather(
 
 // ExtractRepository extracts for a single repository.
 func (p *Pipeline) ExtractRepository(repository provider.GitRepository, eventChan chan<- PipelineEvent) error {
-	defer p.publishEvent(eventChan, RepositoryPipelineEvent{true, repository.GetName()})
+	defer p.publishEvent(eventChan, RepositoryPipelineEvent{true, repository.GetPrivate(), repository.GetName()})
 
 	log.Infof("Cloning repo %v\n", repository.GetName())
 

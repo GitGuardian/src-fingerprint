@@ -24,6 +24,9 @@ type GitRepository interface {
 
 	// GetStorageSiwe is the size of the repository
 	GetStorageSize() int64
+
+	// GetPrivate returns either the repository is private or not.
+	GetPrivate() bool
 }
 
 // Provider is the interface to implement for a Git provider.

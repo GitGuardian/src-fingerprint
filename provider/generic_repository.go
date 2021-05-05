@@ -15,6 +15,7 @@ type Repository struct {
 	httpURL     string
 	createdAt   time.Time
 	storageSize int64
+	private     bool
 }
 
 // GetName returns the name of the repository.
@@ -31,6 +32,9 @@ func (r *Repository) GetCreatedAt() time.Time { return r.createdAt }
 
 // GetStorageSize returns the storage size of the repository.
 func (r *Repository) GetStorageSize() int64 { return r.storageSize }
+
+// GetPrivate returns either the repository is private or not.
+func (r *Repository) GetPrivate() bool { return r.private }
 
 type GenericProvider struct {
 }
@@ -49,6 +53,7 @@ func (p *GenericProvider) Gather(user string) ([]GitRepository, error) {
 		httpURL:     user,
 		createdAt:   time.Time{},
 		storageSize: 0,
+		private:     true,
 	}}, nil
 }
 
