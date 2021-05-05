@@ -30,11 +30,73 @@ It supports 3 main on premise version control service:
   ./src-fingerprint --provider-url http://gitlab.example.com --provider gitlab --object Groupe
   ```
 
-## Some examples
+## Providers
 
-- Don't forget to build the package: `go build ./cmd/src-fingerprint`
+### GitHub
 
-1. Export all files sha from a GitHub Org to a file with logs: `./src-fingerprint -v --output file_shas_collected_dna.json --provider github GitGuardian`
+1. Export all file SHAs from a GitHub Org with private repositories to a file with logs:
+
+```sh
+env VCS_TOKEN="<token>" ./src-fingerprint -v --output file_shas_collected_dna.json --provider github --object GitGuardian
+```
+
+2. Export all file SHAs of every repository the user can access to `stdout`:
+
+```sh
+env VCS_TOKEN="<token>" ./src-fingerprint -v --provider github GitGuardian
+```
+
+### GitLab
+
+1. Export all file SHAs from a GitLab group with private projects to a file with logs:
+
+```sh
+env VCS_TOKEN="<token>" ./src-fingerprint -v --output file_shas_collected_dna.json --provider gitlab --object "GitGuardian-dev-group"
+```
+
+2. Export all file SHAs of every project the user can access to `stdout`:
+
+> :warning: On `gitlab.com` this will attempt to retrieve all repositories on `gitlab.com`
+
+```sh
+env VCS_TOKEN="<token>" ./src-fingerprint -v --provider gitlab
+```
+
+### Bitbucket server (formely Atlassian Stash)
+
+1. Export all file SHAs from a Bitbucket project with private repository to a file with logs:
+
+```sh
+env VCS_TOKEN="<token>" ./src-fingerprint -v --output file_shas_collected_dna.json --provider bitbucket --object "GitGuardian Project"
+```
+
+2. Export all file SHAs of every repository the user can access to `stdout`:
+
+```sh
+env VCS_TOKEN="<token>" ./src-fingerprint -v --provider bitbucket
+```
+
+### Repository
+
+Allows the processing of a single repository given a git clone URL
+
+1. ssh cloning
+
+```sh
+src-fingerprint -p repository -o 'git@github.com:GitGuardian/gg-shield.git'
+```
+
+2. http cloning with basic authentication
+
+```sh
+src-fingerprint -p repository -o 'https://user:password@github.com/GitGuardian/gg-shield.git'
+```
+
+2. http cloning without basic authentication
+
+```sh
+src-fingerprint -p repository -o 'https://github.com/GitGuardian/gg-shield.git'
+```
 
 ## Architecture
 
@@ -62,9 +124,10 @@ The cmd/dna-collector package contains the binary code. It reads from CLI and en
 
 #### Providers
 
-- GitHub: "github.com/google/go-github/v18/github"
+- GitHub wrapper: "github.com/google/go-github/v18/github"
 - Gitlab go wrapper: "github.com/xanzy/go-gitlab"
-- bitbucket not supported yet
+- Bitbucket wrapper: "github.com/suhaibmujahid/go-bitbucket-server/bitbucket"
+- Repository: None
 
 #### Cloning
 
