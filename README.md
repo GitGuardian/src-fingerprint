@@ -10,26 +10,6 @@ It supports 3 main on premise version control service:
 - Gitlab CE and EE
 - Bitbucket
 
-## Use the package
-
-- Build binary
-  ```sh
-  go build ./cmd/src-fingerprint
-  ```
-- Set env var `VCS_TOKEN` to the GitHub Token or GitLab Token
-  ```sh
-  export VCS_TOKEN="<token>"
-  ```
-- Run and read doc
-  ```sh
-  ./src-fingerprint
-  ```
-- Run on a given user/group
-  ```sh
-  ./src-fingerprint --provider github --object Uber
-  ./src-fingerprint --provider-url http://gitlab.example.com --provider gitlab --object Groupe
-  ```
-
 ## Providers
 
 ### GitHub
@@ -37,13 +17,13 @@ It supports 3 main on premise version control service:
 1. Export all file SHAs from a GitHub Org with private repositories to a file with logs:
 
 ```sh
-env VCS_TOKEN="<token>" ./src-fingerprint -v --output file_shas_collected_dna.json --provider github --object GitGuardian
+env VCS_TOKEN="<token>" src-fingerprint -v --output file_shas_collected_dna.json --provider github --object GitGuardian
 ```
 
 2. Export all file SHAs of every repository the user can access to `stdout`:
 
 ```sh
-env VCS_TOKEN="<token>" ./src-fingerprint -v --provider github GitGuardian
+env VCS_TOKEN="<token>" src-fingerprint -v --provider github GitGuardian
 ```
 
 ### GitLab
@@ -51,7 +31,7 @@ env VCS_TOKEN="<token>" ./src-fingerprint -v --provider github GitGuardian
 1. Export all file SHAs from a GitLab group with private projects to a file with logs:
 
 ```sh
-env VCS_TOKEN="<token>" ./src-fingerprint -v --output file_shas_collected_dna.json --provider gitlab --object "GitGuardian-dev-group"
+env VCS_TOKEN="<token>" src-fingerprint -v --output file_shas_collected_dna.json --provider gitlab --object "GitGuardian-dev-group"
 ```
 
 2. Export all file SHAs of every project the user can access to `stdout`:
@@ -59,7 +39,7 @@ env VCS_TOKEN="<token>" ./src-fingerprint -v --output file_shas_collected_dna.js
 > :warning: On `gitlab.com` this will attempt to retrieve all repositories on `gitlab.com`
 
 ```sh
-env VCS_TOKEN="<token>" ./src-fingerprint -v --provider gitlab
+env VCS_TOKEN="<token>" src-fingerprint -v --provider gitlab
 ```
 
 ### Bitbucket server (formely Atlassian Stash)
@@ -67,13 +47,13 @@ env VCS_TOKEN="<token>" ./src-fingerprint -v --provider gitlab
 1. Export all file SHAs from a Bitbucket project with private repository to a file with logs:
 
 ```sh
-env VCS_TOKEN="<token>" ./src-fingerprint -v --output file_shas_collected_dna.json --provider bitbucket --object "GitGuardian Project"
+env VCS_TOKEN="<token>" src-fingerprint -v --output file_shas_collected_dna.json --provider bitbucket --object "GitGuardian Project"
 ```
 
 2. Export all file SHAs of every repository the user can access to `stdout`:
 
 ```sh
-env VCS_TOKEN="<token>" ./src-fingerprint -v --provider bitbucket
+env VCS_TOKEN="<token>" src-fingerprint -v --provider bitbucket
 ```
 
 ### Repository
@@ -120,7 +100,33 @@ The gitlab package contains the implementation of the Gitlab Provider.
 
 The cmd/src-fingerprint package contains the binary code. It reads from CLI and environment the configuration and run the Pipeline on an organization.
 
-### Library we use
+## Development build and testing
+
+- Build binary
+
+  ```sh
+  go build ./cmd/src-fingerprint
+  ```
+
+- Set env var `VCS_TOKEN` to the GitHub Token or GitLab Token
+
+  ```sh
+  export VCS_TOKEN="<token>"
+  ```
+
+- Run and read doc
+
+  ```sh
+  ./src-fingerprint
+  ```
+
+- Run on a given user/group
+  ```sh
+  ./src-fingerprint --provider github --object Uber
+  ./src-fingerprint --provider-url http://gitlab.example.com --provider gitlab --object Groupe
+  ```
+
+### Libraries we use
 
 #### Providers
 
