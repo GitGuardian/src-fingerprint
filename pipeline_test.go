@@ -24,12 +24,14 @@ type ProviderMock struct {
 
 func (mock *ProviderMock) Gather(user string) ([]provider.GitRepository, error) {
 	args := mock.Called(user)
+
 	return args.Get(0).([]provider.GitRepository), args.Error(1)
 }
 
-func (mock *ProviderMock) CloneRepository(cloner cloner.Cloner, repository provider.GitRepository) (*git.Repository, error) {
+func (mock *ProviderMock) CloneRepository(cloner cloner.Cloner, repository provider.GitRepository) (string, error) {
 	args := mock.Called(cloner, repository)
-	return args.Get(0).(*git.Repository), args.Error(1)
+
+	return args.String(0), args.Error(1)
 }
 
 type gitRepositoryMock struct{ name string }

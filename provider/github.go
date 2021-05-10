@@ -5,13 +5,12 @@ import (
 	"fmt"
 	"net/url"
 	"srcfingerprint/cloner"
+	"strings"
 	"sync"
 
 	"github.com/google/go-github/github"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
-	git "gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
 )
 
 const (
@@ -142,11 +141,12 @@ func (p *GitHubProvider) Gather(user string) ([]GitRepository, error) {
 
 // CloneRepository clones a Github repository given the token. The token must have the `read_repository` rights.
 func (p *GitHubProvider) CloneRepository(cloner cloner.Cloner,
-	repository GitRepository) (*git.Repository, error) {
-	auth := &http.BasicAuth{
-		Username: p.token,
-		Password: p.token,
+	repository GitRepository) (string, error) {
+	url := repository.GetHTTPUrl()
+	// If token doesn't exist, don't try to basic auth
+	if p.token != "" {
+		url = strings.Replace(url, "https://", fmt.Sprintf("https://x-access-token:%s@", p.token), 1)
 	}
 
-	return cloner.CloneRepository(repository.GetHTTPUrl(), auth)
+	return cloner.CloneRepository(url)
 }

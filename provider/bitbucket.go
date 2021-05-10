@@ -12,8 +12,6 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/suhaibmujahid/go-bitbucket-server/bitbucket"
-	git "gopkg.in/src-d/go-git.v4"
-	httpGit "gopkg.in/src-d/go-git.v4/plumbing/transport/http"
 )
 
 // Provider is capable of gathering Bitbucket server repositories from an org.
@@ -178,11 +176,12 @@ func (p *BitbucketProvider) Gather(user string) ([]GitRepository, error) {
 
 // CloneRepository clones a Github repository given the token. The token must have the `read_repository` rights.
 func (p *BitbucketProvider) CloneRepository(cloner cloner.Cloner,
-	repository GitRepository) (*git.Repository, error) {
-	auth := &httpGit.BasicAuth{
-		Username: p.transport.user,
-		Password: p.token,
+	repository GitRepository) (string, error) {
+	url := repository.GetHTTPUrl()
+	// If token doesn't exist, don't try to basic auth
+	if p.token != "" {
+		url = strings.Replace(url, "https://", fmt.Sprintf("https://%s:%s@", p.transport.user, p.token), 1)
 	}
 
-	return cloner.CloneRepository(repository.GetHTTPUrl(), auth)
+	return cloner.CloneRepository(url)
 }

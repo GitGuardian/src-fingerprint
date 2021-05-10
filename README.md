@@ -137,9 +137,7 @@ The cmd/src-fingerprint package contains the binary code. It reads from CLI and 
 
 #### Cloning
 
-- go-git: https://github.com/src-d/go-git
+- native wrapped git command
 
-### Issues
-
-- Repo size seems not to work on go gitlab wrapper.
-- Channels are cheap. Complex design overloading semantics isn't.
+Using go-git resulted in in-memory cloning (stream to memory and then to directory).
+This caused too high peaks of memory unsuitable for small VMs.

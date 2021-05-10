@@ -3,31 +3,11 @@ package srcfingerprint
 import (
 	"bufio"
 	"encoding/json"
-	"errors"
 	"os"
 	"os/exec"
 
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/src-d/go-billy.v4/helper/chroot"
-	git "gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/storage/filesystem"
 )
-
-func GetBasePathGoGitRepo(r *git.Repository) (string, error) {
-	// Try to grab the repository Storer
-	s, ok := r.Storer.(*filesystem.Storage)
-	if !ok {
-		return "", errors.New("repository storage is not filesystem.Storage")
-	}
-
-	// Try to get the underlying billy.Filesystem
-	fs, ok := s.Filesystem().(*chroot.ChrootHelper)
-	if !ok {
-		return "", errors.New("filesystem is not chroot.ChrootHelper")
-	}
-
-	return fs.Root(), nil
-}
 
 type BaseExtractor interface {
 	Next() (interface{}, error)
@@ -50,25 +30,15 @@ type FastExtractor struct {
 	ChanGitFiles chan *GitFile
 }
 
-func (fe *FastExtractor) Run(repository *git.Repository) chan *GitFile {
-	// https://gist.github.com/ochinchina/9e409a88e77c3cfd94c3
-	path, err := GetBasePathGoGitRepo(repository)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = os.Chdir(path)
-	if err != nil {
-		log.Fatal(err)
-	}
-
+func (fe *FastExtractor) Run(path string) chan *GitFile {
 	log.Infof("Extracting commits from path %s", path)
 	cmdBase := "git rev-list --objects --all | git cat-file --batch-check='{\"sha\": \"%(objectname)\", \"type\": \"%(objecttype)\", \"filepath\": \"%(rest)\", \"size\": \"%(objectsize:disk)\"}' | grep '\"type\": \"blob\"'" //nolint
 	cmd := exec.Command("bash", "-c", cmdBase)
+	cmd.Dir = path
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 
 	err = cmd.Start()

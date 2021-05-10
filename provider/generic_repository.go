@@ -4,8 +4,6 @@ import (
 	"errors"
 	"srcfingerprint/cloner"
 	"time"
-
-	git "gopkg.in/src-d/go-git.v4"
 )
 
 // Generic Repository Structure.
@@ -59,6 +57,6 @@ func (p *GenericProvider) Gather(user string) ([]GitRepository, error) {
 
 func (p *GenericProvider) CloneRepository(
 	cloner cloner.Cloner,
-	repository GitRepository) (*git.Repository, error) {
-	return cloner.CloneRepository(repository.GetHTTPUrl(), nil)
+	repository GitRepository) (string, error) {
+	return cloner.CloneRepository(repository.GetHTTPUrl())
 }

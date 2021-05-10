@@ -9,8 +9,6 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	gitlab "github.com/xanzy/go-gitlab"
-	git "gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
 )
 
 const (
@@ -239,16 +237,12 @@ func (p *GitLabProvider) collectFromGroup(repositories []GitRepository,
 // CloneRepository clones a Gitlab repository given the token. The token must have the `read_repository` rights.
 func (p *GitLabProvider) CloneRepository(
 	cloner cloner.Cloner,
-	repository GitRepository) (*git.Repository, error) {
-	auth := &http.BasicAuth{
-		Username: p.token,
-		Password: p.token,
-	}
-
+	repository GitRepository) (string, error) {
+	url := repository.GetHTTPUrl()
 	// If token doesn't exist, don't try to basic auth
-	if p.token == "" {
-		auth = nil
+	if p.token != "" {
+		url = strings.Replace(url, "https://", fmt.Sprintf("https://%s:%s@", p.token, p.token), 1)
 	}
 
-	return cloner.CloneRepository(repository.GetHTTPUrl(), auth)
+	return cloner.CloneRepository(url)
 }

@@ -4,8 +4,6 @@ import (
 	"time"
 
 	"srcfingerprint/cloner"
-
-	git "gopkg.in/src-d/go-git.v4"
 )
 
 // GitRepository represents a git repository for the Extractor.
@@ -35,7 +33,7 @@ type Provider interface {
 	// from the provider.
 	Gather(user string) ([]GitRepository, error)
 
-	CloneRepository(cloner cloner.Cloner, repository GitRepository) (*git.Repository, error)
+	CloneRepository(cloner cloner.Cloner, repository GitRepository) (string, error)
 }
 
 // Options represents options for the Provider.
