@@ -39,7 +39,9 @@ func NewDiskCloner(baseDir string) *DiskCloner {
 
 	if cacheDir, err := os.UserCacheDir(); err == nil {
 		cacheDir = filepath.Join(cacheDir, "srcfingerprint")
-		diskCloner.BaseDir = cacheDir
+		if err := os.MkdirAll(cacheDir, os.ModePerm); err == nil {
+			diskCloner.BaseDir = cacheDir
+		}
 
 		return diskCloner
 	}
