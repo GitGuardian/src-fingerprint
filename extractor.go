@@ -31,7 +31,7 @@ type FastExtractor struct {
 }
 
 func (fe *FastExtractor) Run(path string) chan *GitFile {
-	log.Infof("Extracting commits from path %s", path)
+	log.Infof("Extracting commits from path %s\n", path)
 	cmdBase := "git rev-list --objects --all | git cat-file --batch-check='{\"sha\": \"%(objectname)\", \"type\": \"%(objecttype)\", \"filepath\": \"%(rest)\", \"size\": \"%(objectsize:disk)\"}' | grep '\"type\": \"blob\"'" //nolint
 	cmd := exec.Command("bash", "-c", cmdBase)
 	cmd.Dir = path
@@ -53,7 +53,7 @@ func (fe *FastExtractor) Run(path string) chan *GitFile {
 		for {
 			line, _, _ := buf.ReadLine()
 			if len(line) == 0 {
-				log.Info("finish reading all files from stdout from git")
+				log.Infoln("finished reading all files from stdout from git")
 
 				break
 			}
@@ -73,8 +73,8 @@ func (fe *FastExtractor) Run(path string) chan *GitFile {
 		}
 
 		close(fe.ChanGitFiles)
-		log.Info("channel is closed")
-		log.Infof("finishing iterating over files, we have collected %d files", num)
+		log.Infoln("channel is closed")
+		log.Infof("finishing iterating over files, we have collected %d files\n", num)
 
 		if err := os.RemoveAll(path); err != nil {
 			log.Errorln("Unable to remove directory ", path)

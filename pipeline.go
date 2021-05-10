@@ -86,7 +86,7 @@ func (p *Pipeline) gather(
 		output <- repository
 	}
 
-	log.Info("Done gathering repositories")
+	log.Infoln("Done gathering repositories")
 }
 
 // ExtractRepository extracts for a single repository.
