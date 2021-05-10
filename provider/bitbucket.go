@@ -177,11 +177,13 @@ func (p *BitbucketProvider) Gather(user string) ([]GitRepository, error) {
 // CloneRepository clones a Github repository given the token. The token must have the `read_repository` rights.
 func (p *BitbucketProvider) CloneRepository(cloner cloner.Cloner,
 	repository GitRepository) (string, error) {
-	url := repository.GetHTTPUrl()
+	authURL := repository.GetHTTPUrl()
 	// If token doesn't exist, don't try to basic auth
 	if p.token != "" {
-		url = strings.Replace(url, "https://", fmt.Sprintf("https://%s:%s@", p.transport.user, p.token), 1)
+		authURL = strings.Replace(authURL,
+			"https://", fmt.Sprintf("https://%s:%s@",
+				p.transport.user, url.QueryEscape(p.token)), 1)
 	}
 
-	return cloner.CloneRepository(url)
+	return cloner.CloneRepository(authURL)
 }
