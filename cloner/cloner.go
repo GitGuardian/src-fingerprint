@@ -8,24 +8,11 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing/cache"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport"
 	"gopkg.in/src-d/go-git.v4/storage/filesystem"
-	"gopkg.in/src-d/go-git.v4/storage/memory"
 )
 
 // Cloner represents a cloner of git repository.
 type Cloner interface {
 	CloneRepository(url string, auth transport.AuthMethod) (*git.Repository, error)
-}
-
-// MemoryCloner clones a git repository in memory.
-type MemoryCloner struct{}
-
-// CloneRepository clones a git repository given its information.
-func (*MemoryCloner) CloneRepository(url string, auth transport.AuthMethod) (*git.Repository, error) {
-	return git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
-		URL:      url,
-		Progress: ioutil.Discard,
-		Auth:     auth,
-	})
 }
 
 // DiskCloner closes a git repository on disk in a temporary file.
