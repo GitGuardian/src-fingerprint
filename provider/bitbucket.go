@@ -14,7 +14,7 @@ import (
 	"github.com/suhaibmujahid/go-bitbucket-server/bitbucket"
 )
 
-// Provider is capable of gathering Bitbucket server repositories from an org.
+// BitbucketProvider is capable of gathering Bitbucket server repositories from an org.
 type BitbucketProvider struct {
 	client    *bitbucket.Client
 	transport *AuthHeaderTransport
@@ -86,7 +86,7 @@ func NewAuthHeaderTransport(T http.RoundTripper, token string) *AuthHeaderTransp
 	}
 }
 
-// NewProvider creates a new Github Provider.
+// NewBitbucketProvider creates a new Bitbucket provider.
 func NewBitbucketProvider(token string, options Options) Provider {
 	// BaseURL should be like http://localhost:7990/rest/api/1.0/
 	if options.BaseURL == "" {

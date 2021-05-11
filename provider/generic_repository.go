@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// Generic Repository Structure.
+// Repository Structure. Generic.
 type Repository struct {
 	name        string
 	sshURL      string

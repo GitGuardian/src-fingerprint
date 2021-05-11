@@ -18,7 +18,7 @@ const (
 	DefaultGithubAPIURL = "https://api.github.com/"
 )
 
-// Provider is capable of gathering Github repositories from an org.
+// GitHubProvider is capable of gathering Github repositories from an org.
 type GitHubProvider struct {
 	client  *github.Client
 	options Options
@@ -36,7 +36,7 @@ func createFromGithubRepo(r *github.Repository) *Repository {
 	}
 }
 
-// NewProvider creates a new Github Provider.
+// NewGitHubProvider creates a new Github Provider.
 func NewGitHubProvider(token string, options Options) Provider {
 	client := github.NewClient(oauth2.NewClient(
 		context.TODO(),

@@ -12,21 +12,21 @@ import (
 )
 
 const (
-	// DefaultGithubAPIURL is the default API URL.
+	// DefaultGitLabAPIURL is the default API URL.
 	DefaultGitLabAPIURL = "https://gitlab.com/api/v4"
 )
 
 // ErrGroupNotFound is the error returned when group can not be found.
 var ErrGroupNotFound = errors.New("group not found")
 
-// Provider represents a Gitlab Provider. It can gather the list of repositories a given user.
+// GitLabProvider represents a Gitlab Provider. It can gather the list of repositories a given user.
 type GitLabProvider struct {
 	token   string
 	client  *gitlab.Client
 	options Options
 }
 
-// NewProvider  creates a Provider given a token.
+// NewGitLabProvider creates a Provider given a token.
 // If accessing private repositories, token must not be empty.
 func NewGitLabProvider(token string, options Options) Provider {
 	GitLabBaseURL := DefaultGitLabAPIURL
