@@ -90,7 +90,7 @@ func (p *Pipeline) gather(
 }
 
 // ExtractRepository extracts for a single repository.
-func (p *Pipeline) ExtractRepository(repository provider.GitRepository, eventChan chan<- PipelineEvent) error {
+func (p *Pipeline) ExtractRepository(repository provider.GitRepository, after string, eventChan chan<- PipelineEvent) error { // nolint
 	defer p.publishEvent(eventChan, RepositoryPipelineEvent{true, repository.GetPrivate(), repository.GetName()})
 
 	log.Infof("Cloning repo %v\n", repository.GetName())
@@ -103,7 +103,7 @@ func (p *Pipeline) ExtractRepository(repository provider.GitRepository, eventCha
 	log.Infof("Cloned repo %v (size: %v KB)\n", repository.GetName(), repository.GetStorageSize())
 
 	extractorGitFile := NewFastExtractor()
-	extractorGitFile.Run(gitRepository)
+	extractorGitFile.Run(gitRepository, after)
 
 	for gitFile := range extractorGitFile.ChanGitFiles {
 		p.publishEvent(eventChan, ResultGitFilePipelineEvent{repository, gitFile})
@@ -119,7 +119,7 @@ const (
 )
 
 // ExtractRepositories extract repositories and analyze it for a given user and provider.
-func (p *Pipeline) ExtractRepositories(user string, eventChan chan<- PipelineEvent) {
+func (p *Pipeline) ExtractRepositories(user string, after string, eventChan chan<- PipelineEvent) {
 	log.Infof("Extracting user %v\n", user)
 
 	repositoryChannel := make(chan provider.GitRepository)
@@ -142,7 +142,7 @@ func (p *Pipeline) ExtractRepositories(user string, eventChan chan<- PipelineEve
 			defer wg.Done()
 
 			for repository := range repositoryChannel {
-				if err := p.ExtractRepository(repository, eventChan); err != nil {
+				if err := p.ExtractRepository(repository, after, eventChan); err != nil {
 					log.Errorf("extracting %v failed: %v\n", repository.GetName(), err)
 				}
 			}

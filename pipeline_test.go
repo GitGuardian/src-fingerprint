@@ -96,7 +96,7 @@ func (suite *PipelineTestSuite) TestExtractGitRepository() {
 	go func() {
 		defer close(eventChan)
 
-		pipeline.ExtractRepository(repository, eventChan)
+		pipeline.ExtractRepository(repository, "", eventChan)
 	}()
 
 	events := make([]PipelineEvent, 0)
@@ -136,7 +136,7 @@ func (suite *PipelineTestSuite) TestExtractRepositories() {
 	go func() {
 		defer close(eventChan)
 
-		pipeline.ExtractRepositories("user", eventChan)
+		pipeline.ExtractRepositories("user", "", eventChan)
 	}()
 
 	events := make([]PipelineEvent, 0)
