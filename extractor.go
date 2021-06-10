@@ -32,7 +32,7 @@ type FastExtractor struct {
 
 func (fe *FastExtractor) Run(path string) chan *GitFile {
 	log.Infof("Extracting commits from path %s\n", path)
-	cmdBase := "git rev-list --objects --all | git cat-file --batch-check='{\"sha\": \"%(objectname)\", \"type\": \"%(objecttype)\", \"filepath\": \"%(rest)\", \"size\": \"%(objectsize:disk)\"}' | grep '\"type\": \"blob\"'" //nolint
+	cmdBase := "git rev-list --objects --all | git cat-file --batch-check='{\"sha\": \"%(objectname)\", \"type\": \"%(objecttype)\", \"filepath\": \"%(rest)\", \"size\": \"%(objectsize)\"}' | grep '\"type\": \"blob\"'" //nolint
 	cmd := exec.Command("bash", "-c", cmdBase)
 	cmd.Dir = path
 
