@@ -80,6 +80,10 @@ func (p *GitHubProvider) gatherPage(user string, page int) ([]GitRepository, err
 			continue
 		}
 
+		if p.options.SkipArchived && repo.Archived != nil && *repo.Archived {
+			continue
+		}
+
 		repositories = append(repositories, createFromGithubRepo(repo))
 	}
 

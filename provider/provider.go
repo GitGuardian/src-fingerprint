@@ -40,7 +40,8 @@ type Provider interface {
 type Options struct {
 	// OmitForks will tell the Provider to omit fork repositories
 	OmitForks bool
-
+	// SkipArchived will skip archived repositories
+	SkipArchived bool
 	// BaseURL is the base URL of the API
 	BaseURL string
 }
