@@ -66,7 +66,7 @@ What we have done for now to improve performance:
 
 #### Providers
 
-- GitHub wrapper: "github.com/google/go-github/v18/github"
+- GitHub wrapper: "github.com/google/go-github/v36/github"
 - Gitlab go wrapper: "github.com/xanzy/go-gitlab"
 - Bitbucket wrapper: "github.com/suhaibmujahid/go-bitbucket-server/bitbucket"
 - Repository: None

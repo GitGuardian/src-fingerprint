@@ -8,7 +8,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v36/github"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 )
@@ -39,7 +39,7 @@ func createFromGithubRepo(r *github.Repository) *Repository {
 // NewGitHubProvider creates a new Github Provider.
 func NewGitHubProvider(token string, options Options) Provider {
 	client := github.NewClient(oauth2.NewClient(
-		context.TODO(),
+		context.Background(),
 		oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token}),
 	))
 
