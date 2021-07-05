@@ -63,17 +63,29 @@ Allows the processing of a single repository given a git clone URL
 1. ssh cloning
 
 ```sh
-src-fingerprint -p repository -o 'git@github.com:GitGuardian/gg-shield.git'
+src-fingerprint -p repository -u 'git@github.com:GitGuardian/gg-shield.git'
 ```
 
 2. http cloning with basic authentication
 
 ```sh
-src-fingerprint -p repository -o 'https://user:password@github.com/GitGuardian/gg-shield.git'
+src-fingerprint -p repository -u 'https://user:password@github.com/GitGuardian/gg-shield.git'
 ```
 
 2. http cloning without basic authentication
 
 ```sh
-src-fingerprint -p repository -o 'https://github.com/GitGuardian/gg-shield.git'
+src-fingerprint -p repository -u 'https://github.com/GitGuardian/gg-shield.git'
+```
+
+3. repository in a local directory
+
+```sh
+src-fingerprint -p repository -u /projects/gitlab/src-fingerprint
+```
+
+4. repository in current directory
+
+```sh
+src-fingerprint -p repository -u .
 ```

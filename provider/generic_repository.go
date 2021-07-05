@@ -43,7 +43,7 @@ func NewGenericProvider(options Options) Provider {
 
 func (p *GenericProvider) Gather(user string) ([]GitRepository, error) {
 	if user == "" {
-		return nil, errors.New("This provider requires a object. Example: src-fingerprint -p repository -o 'git@github.com:GitGuardian/gg-shield.git'") // nolint
+		return nil, errors.New("This provider requires a object. Example: src-fingerprint -p repository -u 'git@github.com:GitGuardian/gg-shield.git'") // nolint
 	}
 
 	return []GitRepository{&Repository{
