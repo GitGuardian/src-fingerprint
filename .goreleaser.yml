@@ -34,8 +34,3 @@ release:
   gitlab:
     owner: gg-code
     name: src-fingerprint
-
-gitlab_urls:
-  api: https://gitlab.gitguardian.ovh/api/v4/
-  download: https://gitlab.gitguardian.ovh
-  skip_tls_verify: false
