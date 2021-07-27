@@ -30,7 +30,3 @@ changelog:
     exclude:
       - "^docs:"
       - "^test:"
-release:
-  gitlab:
-    owner: gg-code
-    name: src-fingerprint
