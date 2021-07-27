@@ -23,6 +23,6 @@
 .DS_store
 
 /testdata
-src-fingerprint
+/src-fingerprint
 .cache_ggshield
 dist/
