@@ -26,13 +26,13 @@ It supports 3 main on premise version control service:
 3. Select Personal Access Tokens
 4. Click on `Generate a new token`
 5. Click the `repo` box. This is the only scope we need
-6. Click on `Generate token`. The token will only be available at this time so make sure you keep it in a safe place.
+6. Click on `Generate token`. The token will only be available at this time so make sure you keep it in a safe place
 
 ### GitLab
 1. Click on your profile picture at the top right of the screen. A dropdown menu will appear and you will be able to access your personal settings by clicking on *Preferences*
 2. In the left sidebar, click on `Access Tokens`
-3. Click the `read repository` box. This is the only scope we need. You can set an end-date for the token validity if you want more security.
-4. Click on `Create personal token`. The token will only be available at this time so make sure you keep it in a safe place.
+3. Click the `read repository` box. This is the only scope we need. You can set an end-date for the token validity if you want more security
+4. Click on `Create personal token`. The token will only be available at this time so make sure you keep it in a safe place
 
 ## Compute my fileshas
 ### GitHub
