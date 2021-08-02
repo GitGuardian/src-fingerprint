@@ -16,7 +16,7 @@ import (
 const (
 	// DefaultGithubAPIURL is the default API URL.
 	DefaultGithubAPIURL = "https://api.github.com/"
-	unknownTotal        = 999999999999
+	unknownTotal        = 99999
 )
 
 // GitHubProvider is capable of gathering Github repositories from an org.
