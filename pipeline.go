@@ -75,7 +75,7 @@ func (p *Pipeline) gather(
 
 	repositories, err := p.Provider.Gather(user)
 	if err != nil {
-		log.Errorf("Gathering repositories for %v failed: %v\n", user, err)
+		log.Errorf("Gathering repositories failed: %v\n", err)
 
 		return
 	}
