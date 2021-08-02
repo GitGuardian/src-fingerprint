@@ -25,6 +25,7 @@ type GitHubProvider struct {
 	options    Options
 	token      string
 	totalPages int
+	isOrg      bool
 }
 
 func createFromGithubRepo(r *github.Repository) *Repository {
@@ -59,9 +60,12 @@ func NewGitHubProvider(token string, options Options) Provider {
 		options:    options,
 		token:      token,
 		totalPages: unknownTotal,
+		isOrg:      true,
 	}
 }
 
+// Gather Page for GitHub provider.
+// If is first page update the total page count and try as user as well.
 func (p *GitHubProvider) gatherPage(user string, page int) ([]GitRepository, error) {
 	total := fmt.Sprint(p.totalPages)
 	if total == fmt.Sprint(unknownTotal) {
@@ -76,7 +80,20 @@ func (p *GitHubProvider) gatherPage(user string, page int) ([]GitRepository, err
 		collectErr error
 	)
 
-	if user == "" {
+	if p.isOrg {
+		opt := &github.RepositoryListByOrgOptions{
+			ListOptions: github.ListOptions{
+				PerPage: reposPerPage, Page: 1,
+			},
+		}
+		repos, resp, collectErr = p.client.Repositories.ListByOrg(context.Background(), user, opt)
+
+		if resp.StatusCode == 404 && page == 1 {
+			p.isOrg = false
+		}
+	}
+
+	if !p.isOrg {
 		opt := &github.RepositoryListOptions{
 			ListOptions: github.ListOptions{
 				PerPage: reposPerPage, Page: 1,
@@ -84,13 +101,6 @@ func (p *GitHubProvider) gatherPage(user string, page int) ([]GitRepository, err
 		}
 
 		repos, resp, collectErr = p.client.Repositories.List(context.Background(), user, opt)
-	} else {
-		opt := &github.RepositoryListByOrgOptions{
-			ListOptions: github.ListOptions{
-				PerPage: reposPerPage, Page: 1,
-			},
-		}
-		repos, resp, collectErr = p.client.Repositories.ListByOrg(context.Background(), user, opt)
 	}
 
 	if collectErr != nil {
@@ -150,7 +160,7 @@ func (p *GitHubProvider) Gather(user string) ([]GitRepository, error) {
 		if pageCount == 1 {
 			wg.Wait()
 
-			if pageCount == unknownTotal {
+			if p.totalPages == unknownTotal {
 				return nil, fmt.Errorf("unable to gather total pages")
 			}
 		}
