@@ -16,13 +16,15 @@ import (
 const (
 	// DefaultGithubAPIURL is the default API URL.
 	DefaultGithubAPIURL = "https://api.github.com/"
+	unknownTotal        = 999999999999
 )
 
 // GitHubProvider is capable of gathering Github repositories from an org.
 type GitHubProvider struct {
-	client  *github.Client
-	options Options
-	token   string
+	client     *github.Client
+	options    Options
+	token      string
+	totalPages int
 }
 
 func createFromGithubRepo(r *github.Repository) *Repository {
@@ -53,24 +55,50 @@ func NewGitHubProvider(token string, options Options) Provider {
 	}
 
 	return &GitHubProvider{
-		client:  client,
-		options: options,
-		token:   token,
+		client:     client,
+		options:    options,
+		token:      token,
+		totalPages: unknownTotal,
 	}
 }
 
 func (p *GitHubProvider) gatherPage(user string, page int) ([]GitRepository, error) {
-	opt := &github.RepositoryListByOrgOptions{
-		ListOptions: github.ListOptions{
-			PerPage: reposPerPage, Page: page,
-		},
+	total := fmt.Sprint(p.totalPages)
+	if total == fmt.Sprint(unknownTotal) {
+		total = "?"
 	}
 
-	log.Infof("Gathering page %v for %s\n", page, user)
+	log.Infof("Gathering page %v/%v for %s\n", page, total, user)
 
-	repos, _, err := p.client.Repositories.ListByOrg(context.Background(), user, opt)
-	if err != nil {
-		return nil, err
+	var (
+		resp       *github.Response
+		repos      []*github.Repository
+		collectErr error
+	)
+
+	if user == "" {
+		opt := &github.RepositoryListOptions{
+			ListOptions: github.ListOptions{
+				PerPage: reposPerPage, Page: 1,
+			},
+		}
+
+		repos, resp, collectErr = p.client.Repositories.List(context.Background(), user, opt)
+	} else {
+		opt := &github.RepositoryListByOrgOptions{
+			ListOptions: github.ListOptions{
+				PerPage: reposPerPage, Page: 1,
+			},
+		}
+		repos, resp, collectErr = p.client.Repositories.ListByOrg(context.Background(), user, opt)
+	}
+
+	if collectErr != nil {
+		return nil, collectErr
+	}
+
+	if p.totalPages == unknownTotal {
+		p.totalPages = resp.LastPage
 	}
 
 	repositories := make([]GitRepository, 0, len(repos))
@@ -94,32 +122,14 @@ func (p *GitHubProvider) gatherPage(user string, page int) ([]GitRepository, err
 func (p *GitHubProvider) Gather(user string) ([]GitRepository, error) {
 	log.Debugf("Gathering repositories for Github org %s\n", user)
 
-	opt := &github.RepositoryListByOrgOptions{
-		ListOptions: github.ListOptions{
-			PerPage: reposPerPage, Page: 1,
-		},
-	}
-
-	repos, resp, err := p.client.Repositories.ListByOrg(context.Background(), user, opt)
-	if err != nil {
-		return nil, err
-	}
-
-	pagesCount := resp.LastPage
-
-	log.Infof("Gathering %v pages for %s\n", pagesCount, user)
-
 	wg := sync.WaitGroup{}
 
 	var mu sync.Mutex
 
 	// repositories protected by mu, since multiple goroutines will access it
-	repositories := make([]GitRepository, 0, pagesCount*reposPerPage)
-	for _, repo := range repos {
-		repositories = append(repositories, createFromGithubRepo(repo))
-	}
+	repositories := make([]GitRepository, 0)
 
-	for pageCount := 1; pageCount <= pagesCount; pageCount++ {
+	for pageCount := 1; pageCount <= p.totalPages; pageCount++ {
 		wg.Add(1)
 
 		go func(page int) {
@@ -136,6 +146,14 @@ func (p *GitHubProvider) Gather(user string) ([]GitRepository, error) {
 			repositories = append(repositories, pageRepositories...)
 			mu.Unlock()
 		}(pageCount)
+
+		if pageCount == 1 {
+			wg.Wait()
+
+			if pageCount == unknownTotal {
+				return nil, fmt.Errorf("unable to gather total pages")
+			}
+		}
 	}
 
 	wg.Wait()

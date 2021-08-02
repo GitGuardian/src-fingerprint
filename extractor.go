@@ -81,7 +81,6 @@ func (fe *FastExtractor) Run(path string, after string) chan *GitFile {
 		}
 
 		close(fe.ChanGitFiles)
-		log.Infoln("channel is closed")
 		log.Infof("finishing iterating over files, we have collected %d files\n", num)
 
 		if err := os.RemoveAll(path); err != nil {
