@@ -34,7 +34,7 @@ You need `go` installed and `GOBIN` in your `PATH`. Once that is done, run the
 command:
 
 ```shell
-$ go get -u github.com/gitguardian/src-fingerprint
+$ go get -u github.com/gitguardian/src-fingerprint/cmd/src-fingerprint
 ```
 
 ## Generate My Token
