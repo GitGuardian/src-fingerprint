@@ -79,7 +79,7 @@ func main() {
 
 	app := &cli.App{
 		Name:    "src-fingerprint",
-		Version: "unknown",
+		Version: version,
 		Usage:   "Collect user/organization file hashes from your vcs provider of choice",
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
