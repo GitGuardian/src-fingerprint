@@ -1,8 +1,8 @@
 package srcfingerprint
 
 import (
-	"path/filepath"
 	"srcfingerprint/cloner"
+	"srcfingerprint/extractor"
 	"srcfingerprint/provider"
 	"sync"
 	"testing"
@@ -11,7 +11,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	git "gopkg.in/src-d/go-git.v4"
 )
 
 type PipelineTestSuite struct {
@@ -34,6 +33,32 @@ func (mock *ProviderMock) CloneRepository(cloner cloner.Cloner, repository provi
 	return args.String(0), args.Error(1)
 }
 
+type ExtractorMock struct {
+	gitFiles []extractor.GitFile
+	i        *int
+}
+
+func (m ExtractorMock) Next() (*extractor.GitFile, bool) {
+	if *m.i < len(m.gitFiles) {
+		*m.i++
+		return &m.gitFiles[*m.i-1], true
+	} else {
+		return nil, false
+	}
+}
+
+func (m ExtractorMock) Run(string, string) {}
+
+type ExtractorMockMaker struct {
+	gitFiles []extractor.GitFile
+}
+
+func (e ExtractorMockMaker) Make() extractor.Extractor {
+	i := new(int)
+	*i = 0
+	return ExtractorMock{e.gitFiles, i}
+}
+
 type gitRepositoryMock struct{ name string }
 
 func (m gitRepositoryMock) GetName() string         { return m.name }
@@ -45,15 +70,6 @@ func (m gitRepositoryMock) GetPrivate() bool        { return true }
 
 func createGitRepository(name string) provider.GitRepository {
 	return gitRepositoryMock{name: name}
-}
-
-func openTestGitRepository(t *testing.T) *git.Repository {
-	repopath, _ := filepath.Abs(filepath.Join("testdata", "gitrepo", "git"))
-	repository, err := git.PlainOpen(repopath)
-	if err != nil {
-		t.Fatalf("could not open test git repository: %v", err)
-	}
-	return repository
 }
 
 func (suite *PipelineTestSuite) TestGather() {
@@ -80,23 +96,28 @@ func (suite *PipelineTestSuite) TestGather() {
 }
 
 func (suite *PipelineTestSuite) TestExtractGitRepository() {
-	suite.T().Skip("Skip until repository is stable")
 	eventChan := make(chan PipelineEvent)
-	provider := &ProviderMock{}
+	providerMock := &ProviderMock{}
 	repository := createGitRepository("repoName")
-	pipeline := Pipeline{Provider: provider}
 
-	gitRepository := openTestGitRepository(suite.T())
-	commitIter, _ := gitRepository.CommitObjects()
-	// firstCommit, _ := commitIter.Next()
-	commitIter.Close()
+	gitFile := extractor.GitFile{
+		Sha:      "a_sha",
+		Type:     "a_type",
+		Filepath: "a_filepath",
+		Size:     "a_size",
+	}
+	extractorMockMaker := &ExtractorMockMaker{[]extractor.GitFile{gitFile}}
+	pipeline := Pipeline{Provider: providerMock, ExtractorMaker: extractorMockMaker}
 
-	provider.On("CloneRepository", nil, repository).Return(gitRepository, nil)
+	gitRepository := "git://host/repoName"
+
+	providerMock.On("CloneRepository", nil, repository).Return(gitRepository, nil)
 
 	go func() {
 		defer close(eventChan)
 
-		pipeline.ExtractRepository(repository, "", eventChan)
+		err := pipeline.ExtractRepository(repository, "", eventChan)
+		assert.Nil(suite.T(), err, "ExtractRepository returned an error")
 	}()
 
 	events := make([]PipelineEvent, 0)
@@ -105,30 +126,32 @@ func (suite *PipelineTestSuite) TestExtractGitRepository() {
 	}
 
 	expectedEvents := []PipelineEvent{
-		// ResultPipelineEvent{
-		// 	Repository: repository,
-		// 	Commit:     firstCommit,
-		// 	Author:     firstCommit.Author,
-		// 	Committer:  firstCommit.Committer,
-		// },
+		ResultGitFilePipelineEvent{
+			Repository: repository,
+			GitFile:    &gitFile,
+		},
 		RepositoryPipelineEvent{true, true, "repoName"},
 	}
 
-	provider.AssertExpectations(suite.T())
+	providerMock.AssertExpectations(suite.T())
 	assert.Equal(suite.T(), expectedEvents, events)
 }
 
 func (suite *PipelineTestSuite) TestExtractRepositories() {
-	suite.T().Skip("Skip until repository is stable") // Skip for now
 	eventChan := make(chan PipelineEvent)
 	providerMock := &ProviderMock{}
 	repository := createGitRepository("repoName")
-	pipeline := Pipeline{Provider: providerMock}
 
-	gitRepository := openTestGitRepository(suite.T())
-	commitIter, _ := gitRepository.CommitObjects()
-	// firstCommit, _ := commitIter.Next()
-	commitIter.Close()
+	gitFile := extractor.GitFile{
+		Sha:      "a_sha",
+		Type:     "a_type",
+		Filepath: "a_filepath",
+		Size:     "a_size",
+	}
+	extractorMockMaker := &ExtractorMockMaker{[]extractor.GitFile{gitFile}}
+	pipeline := Pipeline{Provider: providerMock, ExtractorMaker: extractorMockMaker}
+
+	gitRepository := "git://host/repoName"
 
 	providerMock.On("Gather", "user").Return([]provider.GitRepository{repository}, nil)
 	providerMock.On("CloneRepository", nil, repository).Return(gitRepository, nil)
@@ -146,12 +169,10 @@ func (suite *PipelineTestSuite) TestExtractRepositories() {
 
 	expectedEvents := []PipelineEvent{
 		RepositoryListPipelineEvent{Repositories: []provider.GitRepository{repository}},
-		// ResultPipelineEvent{
-		// 	Repository: repository,
-		// 	Commit:     firstCommit,
-		// 	Author:     firstCommit.Author,
-		// 	Committer:  firstCommit.Committer,
-		// },
+		ResultGitFilePipelineEvent{
+			Repository: repository,
+			GitFile:    &gitFile,
+		},
 		RepositoryPipelineEvent{true, true, "repoName"},
 	}
 

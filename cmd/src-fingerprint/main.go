@@ -7,6 +7,7 @@ import (
 	"srcfingerprint"
 	"srcfingerprint/cloner"
 	"srcfingerprint/exporter"
+	"srcfingerprint/extractor"
 	"srcfingerprint/provider"
 	"time"
 
@@ -56,13 +57,6 @@ func getExporter(exporterStr string, output io.Writer) (exporter.Exporter, error
 	default:
 		return nil, fmt.Errorf("invalid export format: %s", exporterStr)
 	}
-}
-
-type authorInfo struct {
-	Name           string
-	Email          string
-	Count          int
-	LastCommitDate time.Time
 }
 
 const DefaultClonerN = 8
@@ -200,10 +194,10 @@ func mainAction(c *cli.Context) error {
 	}
 
 	pipeline := srcfingerprint.Pipeline{
-		Provider:     srcProvider,
-		Cloner:       srcCloner,
-		Analyzer:     &srcfingerprint.Analyzer{},
-		ClonersCount: c.Int("cloners"),
+		Provider:       srcProvider,
+		Cloner:         srcCloner,
+		ClonersCount:   c.Int("cloners"),
+		ExtractorMaker: &extractor.FastExtractorMaker{},
 	}
 
 	ticker := time.Tick(1 * time.Second)
@@ -216,8 +210,6 @@ func mainAction(c *cli.Context) error {
 		doneRepo      int
 		gitFilesCount int
 	)
-
-	authors := make(map[string]*authorInfo)
 
 loop:
 	for {
@@ -233,18 +225,6 @@ loop:
 			case srcfingerprint.RepositoryPipelineEvent:
 				if typedEvent.Finished {
 					doneRepo++
-				}
-			case srcfingerprint.ResultCommitPipelineEvent:
-				identity := typedEvent.Author.Name + typedEvent.Author.Email
-				if _, identityExists := authors[identity]; !identityExists {
-					authors[identity] = &authorInfo{}
-				}
-				commit := typedEvent.Commit
-				authors[identity].Count++
-				authors[identity].Name = typedEvent.Author.Name
-				authors[identity].Email = typedEvent.Author.Email
-				if commit.Author.When.UTC().After(authors[identity].LastCommitDate) {
-					authors[identity].LastCommitDate = commit.Author.When.UTC()
 				}
 			// Collecting gitFiles
 			case srcfingerprint.ResultGitFilePipelineEvent:

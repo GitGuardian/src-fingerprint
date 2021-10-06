@@ -1,4 +1,4 @@
-package srcfingerprint
+package extractor
 
 import (
 	"bufio"
@@ -10,28 +10,25 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type BaseExtractor interface {
-	Next() (interface{}, error)
-}
-
-type GitFile struct {
-	Sha      string `json:"sha"`
-	Type     string `json:"type"`
-	Filepath string `json:"filepath"`
-	Size     string `json:"size"`
-}
-
-func NewFastExtractor() *FastExtractor {
-	return &FastExtractor{make(chan *GitFile)}
-}
-
 // FastExtractor will directly extract the information without using an Analyzer
 // There are designed to use raw git commands to get what is needed.
 type FastExtractor struct {
 	ChanGitFiles chan *GitFile
 }
 
-func (fe *FastExtractor) Run(path string, after string) chan *GitFile {
+type FastExtractorMaker struct{}
+
+func (fem *FastExtractorMaker) Make() Extractor {
+	return FastExtractor{make(chan *GitFile)}
+}
+
+func (fe FastExtractor) Next() (*GitFile, bool) {
+	gitFile, ok := <-fe.ChanGitFiles
+
+	return gitFile, ok
+}
+
+func (fe FastExtractor) Run(path string, after string) {
 	log.Infof("Extracting commits from path %s\n", path)
 
 	cmdRevList := "git rev-list --objects --all"
@@ -87,6 +84,4 @@ func (fe *FastExtractor) Run(path string, after string) chan *GitFile {
 			log.Errorln("Unable to remove directory ", path)
 		}
 	}()
-
-	return fe.ChanGitFiles
 }

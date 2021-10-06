@@ -3,13 +3,13 @@ package exporter
 import (
 	"encoding/json"
 	"io"
-	"srcfingerprint"
+	"srcfingerprint/extractor"
 )
 
 type ExportGitFile struct {
 	RepositoryName    string `json:"repository_name"` // nolint
 	RepositoryPrivate bool   `json:"private"`
-	srcfingerprint.GitFile
+	extractor.GitFile
 }
 
 type Exporter interface {

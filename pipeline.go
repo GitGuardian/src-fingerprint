@@ -2,11 +2,11 @@ package srcfingerprint
 
 import (
 	"srcfingerprint/cloner"
+	"srcfingerprint/extractor"
 	"srcfingerprint/provider"
 	"sync"
 
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
 // PipelineEvent is the interface for a pipeline event.
@@ -18,17 +18,9 @@ type RepositoryListPipelineEvent struct {
 	Repositories []provider.GitRepository
 }
 
-// ResultCommitPipelineEvent represents the event for a result.
-type ResultCommitPipelineEvent struct {
-	Repository provider.GitRepository
-	Commit     *object.Commit
-	Author     object.Signature
-	Committer  object.Signature
-}
-
 type ResultGitFilePipelineEvent struct {
 	Repository provider.GitRepository
-	GitFile    *GitFile
+	GitFile    *extractor.GitFile
 }
 
 // RepositoryPipelineEvent represents an event from a repository.
@@ -51,11 +43,10 @@ type CommitPipelineEvent struct {
 
 // Pipeline represents the whole extraction pipeline.
 type Pipeline struct {
-	Provider provider.Provider
-	Cloner   cloner.Cloner
-	Analyzer *Analyzer
-
-	ClonersCount int
+	Provider       provider.Provider
+	Cloner         cloner.Cloner
+	ExtractorMaker extractor.Maker
+	ClonersCount   int
 }
 
 func (p *Pipeline) publishEvent(ch chan<- PipelineEvent, event PipelineEvent) {
@@ -102,10 +93,15 @@ func (p *Pipeline) ExtractRepository(repository provider.GitRepository, after st
 
 	log.Infof("Cloned repo %v (size: %v KB)\n", repository.GetName(), repository.GetStorageSize())
 
-	extractorGitFile := NewFastExtractor()
-	extractorGitFile.Run(gitRepository, after)
+	repositoryExtractor := p.ExtractorMaker.Make()
+	repositoryExtractor.Run(gitRepository, after)
 
-	for gitFile := range extractorGitFile.ChanGitFiles {
+	for {
+		gitFile, ok := repositoryExtractor.Next()
+		if !ok {
+			break
+		}
+
 		p.publishEvent(eventChan, ResultGitFilePipelineEvent{repository, gitFile})
 	}
 
