@@ -11,6 +11,7 @@
     - [GitLab](#gitlab-1)
     - [Bitbucket server (formely Atlassian Stash)](#bitbucket-server-formely-atlassian-stash)
     - [Repository](#repository)
+  - [License](#License)
 
 ## Introduction
 
@@ -62,7 +63,7 @@ $ go get -u github.com/gitguardian/src-fingerprint/cmd/src-fingerprint
 1. Export all file SHAs from a GitHub Org with private repositories to a file with logs:
 
 ```sh
-env VCS_TOKEN="<token>" src-fingerprint -v --output file_shas_collected_dna.json --provider github --object GitGuardian
+env VCS_TOKEN="<token>" src-fingerprint -v --output fileshas_collected.json --provider github --object GitGuardian
 ```
 
 2. Export all file SHAs of every repository the user can access to `stdout`:
@@ -76,7 +77,7 @@ env VCS_TOKEN="<token>" src-fingerprint -v --provider github GitGuardian
 1. Export all file SHAs from a GitLab group with private projects to a file with logs:
 
 ```sh
-env VCS_TOKEN="<token>" src-fingerprint -v --output file_shas_collected_dna.json --provider gitlab --object "GitGuardian-dev-group"
+env VCS_TOKEN="<token>" src-fingerprint -v --output fileshas_collected.json --provider gitlab --object "GitGuardian-dev-group"
 ```
 
 2. Export all file SHAs of every project the user can access to `stdout`:
@@ -92,7 +93,7 @@ env VCS_TOKEN="<token>" src-fingerprint -v --provider gitlab
 1. Export all file SHAs from a Bitbucket project with private repository to a file with logs:
 
 ```sh
-env VCS_TOKEN="<token>" src-fingerprint -v --output file_shas_collected_dna.json --provider bitbucket --object "GitGuardian Project"
+env VCS_TOKEN="<token>" src-fingerprint -v --output fileshas_collected.json --provider bitbucket --object "GitGuardian Project"
 ```
 
 2. Export all file SHAs of every repository the user can access to `stdout`:
@@ -136,4 +137,4 @@ src-fingerprint -p repository -u .
 ```
 
 ## License
-GitGuardian src-fingerprint is MIT licensed.
+GitGuardian `src-fingerprint` is MIT licensed.
