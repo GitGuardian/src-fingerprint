@@ -260,7 +260,7 @@ loop:
 				}
 			}
 		case <-ticker:
-			if totalRepo == 0 {
+			if totalRepo == 0 || gitFilesCount == 0 {
 				continue
 			}
 
@@ -269,7 +269,8 @@ loop:
 		}
 	}
 
-	log.Infof("Final stats:\n%v/%v repos: %v files analyzed\n",
+	log.Infoln("Final stats:")
+	log.Infof("%v/%v repos: %v files analyzed\n",
 		doneRepo, totalRepo, gitFilesCount)
 	log.Infof("Dumping to output %v\n", c.String("output"))
 
