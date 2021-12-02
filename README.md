@@ -134,3 +134,6 @@ src-fingerprint -p repository -u /projects/gitlab/src-fingerprint
 ```sh
 src-fingerprint -p repository -u .
 ```
+
+## License
+GitGuardian src-fingerprint is MIT licensed.
