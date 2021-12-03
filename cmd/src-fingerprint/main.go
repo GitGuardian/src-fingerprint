@@ -111,9 +111,10 @@ func main() {
 				Usage:   "set output path to `FILE`. stdout by default",
 			},
 			&cli.StringFlag{
-				Name:  "export-format",
-				Value: "jsonl",
-				Usage: "export format: 'jsonl'/'gzip-jsonl'/'json'/'gzip-json'. 'jsonl' by default",
+				Name:    "export-format",
+				Aliases: []string{"f"},
+				Value:   "jsonl",
+				Usage:   "export format: 'jsonl'/'gzip-jsonl'/'json'/'gzip-json'. 'jsonl' by default",
 			},
 			&cli.StringFlag{
 				Name:  "clone-dir",
