@@ -30,3 +30,19 @@ changelog:
     exclude:
       - "^docs:"
       - "^test:"
+
+brews:
+  -
+    name: src-fingerprint
+    tap:
+      owner: gitguardian
+      name: homebrew-tap
+      branch: main
+      token: "{{ .Env.PAT_GITHUB }}"
+    download_strategy: CurlDownloadStrategy
+    commit_author:
+      name: goreleaserbot
+      email: goreleaser@gitguardian.com
+    commit_msg_template: "Brew formula update for {{ .ProjectName }} version {{ .Tag }}"
+    folder: Formula
+    description: "src-fingerprint is a CLI util to easily compute the fileshas associated to a set of git repositories."
