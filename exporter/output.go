@@ -32,8 +32,9 @@ func NewJSONExporter(output io.WriteCloser) Exporter {
 	}
 }
 
-func NewGzipJSONExporter(output io.WriteCloser) Exporter {
+func NewGzipJSONExporter(output io.Writer) Exporter {
 	compressedWriter := gzip.NewWriter(output)
+
 	return &JSONExporter{
 		elements: []*ExportGitFile{},
 		encoder:  json.NewEncoder(compressedWriter),
@@ -51,9 +52,11 @@ func (e *JSONExporter) Close() error {
 	if err1 := e.encoder.Encode(e.elements); err1 != nil {
 		return err1
 	}
+
 	if err2 := e.writer.Close(); err2 != nil {
 		return err2
 	}
+
 	return nil
 }
 
@@ -69,8 +72,9 @@ func NewJSONLExporter(output io.WriteCloser) Exporter {
 	}
 }
 
-func NewGzipJSONLExporter(output io.WriteCloser) Exporter {
+func NewGzipJSONLExporter(output io.Writer) Exporter {
 	compressedWriter := gzip.NewWriter(output)
+
 	return &JSONLExporter{
 		encoder: json.NewEncoder(compressedWriter),
 		writer:  compressedWriter,
