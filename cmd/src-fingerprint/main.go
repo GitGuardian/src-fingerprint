@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"srcfingerprint"
 	"srcfingerprint/cloner"
 	"srcfingerprint/exporter"
@@ -167,6 +168,7 @@ func mainAction(c *cli.Context) error {
 	}
 
 	output := os.Stdout
+	fsOutput := false
 
 	if c.String("output") != "-" {
 		changedOutput, err := os.OpenFile(c.String("output"), os.O_RDWR|os.O_CREATE, os.ModePerm)
@@ -175,6 +177,7 @@ func mainAction(c *cli.Context) error {
 		}
 
 		output = changedOutput
+		fsOutput = true
 
 		defer output.Close()
 	}
@@ -282,5 +285,11 @@ loop:
 	}
 
 	log.Infoln("Done")
+
+	if fsOutput {
+		path, _ := filepath.Abs(c.String("output"))
+		fmt.Printf("Collected file hashes saved in file %s\n", path) // nolint
+	}
+
 	return nil
 }
