@@ -179,7 +179,15 @@ func mainAction(c *cli.Context) error {
 		output = changedOutput
 		fsOutput = true
 
-		defer output.Close()
+		defer func(output *os.File) {
+			if _, err := output.Seek(0, 1); err == nil {
+				// output is still open, we close it
+				err := output.Close()
+				if err != nil {
+					log.Errorf("Could not close output file: %s", err)
+				}
+			}
+		}(output)
 	}
 
 	var srcCloner cloner.Cloner = cloner.NewDiskCloner(c.String("clone-dir"))
@@ -198,11 +206,13 @@ func mainAction(c *cli.Context) error {
 
 	srcProvider, err := getProvider(c.String("provider"), c.String("token"), providerOptions)
 	if err != nil {
+		log.Errorln(err)
 		cli.ShowAppHelpAndExit(c, 1)
 	}
 
 	outputExporter, err := getExporter(c.String("export-format"), output)
 	if err != nil {
+		log.Errorln(err)
 		cli.ShowAppHelpAndExit(c, 1)
 	}
 
