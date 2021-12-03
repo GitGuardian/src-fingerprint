@@ -36,12 +36,14 @@ linters:
     - wrapcheck
     - exhaustivestruct
     - errorlint
+    - ireturn
     # temporary disables
     - gci
     - gocritic
     - gofumpt
     - funlen
     - gocyclo
+    - varnamelen
   disable-all: false
   presets:
     - bugs
