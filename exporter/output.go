@@ -1,6 +1,7 @@
 package exporter
 
 import (
+	"compress/gzip"
 	"encoding/json"
 	"io"
 	"srcfingerprint"
@@ -20,12 +21,23 @@ type Exporter interface {
 type JSONExporter struct {
 	elements []*ExportGitFile
 	encoder  *json.Encoder
+	writer   io.WriteCloser
 }
 
-func NewJSONExporter(output io.Writer) Exporter {
+func NewJSONExporter(output io.WriteCloser) Exporter {
 	return &JSONExporter{
 		elements: []*ExportGitFile{},
 		encoder:  json.NewEncoder(output),
+		writer: output,
+	}
+}
+
+func NewGzipJSONExporter(output io.WriteCloser) Exporter {
+	compressedWriter := gzip.NewWriter(output)
+	return &JSONExporter{
+		elements: []*ExportGitFile{},
+		encoder:  json.NewEncoder(compressedWriter),
+		writer:   compressedWriter,
 	}
 }
 
@@ -36,16 +48,32 @@ func (e *JSONExporter) AddElement(gitFile *ExportGitFile) error {
 }
 
 func (e *JSONExporter) Close() error {
-	return e.encoder.Encode(e.elements)
+	if err1 := e.encoder.Encode(e.elements); err1 != nil {
+		return err1
+	}
+	if err2 := e.writer.Close(); err2 != nil {
+		return err2
+	}
+	return nil
 }
 
 type JSONLExporter struct {
 	encoder *json.Encoder
+	writer  io.WriteCloser
 }
 
-func NewJSONLExporter(output io.Writer) Exporter {
+func NewJSONLExporter(output io.WriteCloser) Exporter {
 	return &JSONLExporter{
 		encoder: json.NewEncoder(output),
+		writer:  output,
+	}
+}
+
+func NewGzipJSONLExporter(output io.WriteCloser) Exporter {
+	compressedWriter := gzip.NewWriter(output)
+	return &JSONLExporter{
+		encoder: json.NewEncoder(compressedWriter),
+		writer:  compressedWriter,
 	}
 }
 
@@ -54,5 +82,5 @@ func (e *JSONLExporter) AddElement(gitFile *ExportGitFile) error {
 }
 
 func (e *JSONLExporter) Close() error {
-	return nil
+	return e.writer.Close()
 }

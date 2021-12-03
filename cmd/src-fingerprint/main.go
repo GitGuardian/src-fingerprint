@@ -47,12 +47,16 @@ func getProvider(providerStr string, token string, providerOptions provider.Opti
 	}
 }
 
-func getExporter(exporterStr string, output io.Writer) (exporter.Exporter, error) {
+func getExporter(exporterStr string, output io.WriteCloser) (exporter.Exporter, error) {
 	switch exporterStr {
 	case "json":
 		return exporter.NewJSONExporter(output), nil
+	case "gzip-json":
+		return exporter.NewGzipJSONExporter(output), nil
 	case "jsonl":
 		return exporter.NewJSONLExporter(output), nil
+	case "gzip-jsonl":
+		return exporter.NewGzipJSONLExporter(output), nil
 	default:
 		return nil, fmt.Errorf("invalid export format: %s", exporterStr)
 	}
@@ -106,6 +110,11 @@ func main() {
 				Usage:   "set output path to `FILE`. stdout by default",
 			},
 			&cli.StringFlag{
+				Name:  "export-format",
+				Value: "jsonl",
+				Usage: "export format: 'jsonl'/'gzip-jsonl'/'json'/'gzip-json'. 'jsonl' by default",
+			},
+			&cli.StringFlag{
 				Name:  "clone-dir",
 				Value: "-",
 				Usage: "set cloning location for repositories",
@@ -120,11 +129,6 @@ func main() {
 				Aliases:  []string{"p"},
 				Required: true,
 				Usage:    "vcs provider. options: 'gitlab'/'github'/'bitbucket'/'repository'",
-			},
-			&cli.StringFlag{
-				Name:  "export-format",
-				Value: "jsonl",
-				Usage: "export format: 'jsonl'/'json'. jsonl by default",
 			},
 			&cli.StringFlag{
 				Name:    "token",
@@ -279,6 +283,5 @@ loop:
 	}
 
 	log.Infoln("Done")
-
 	return nil
 }
