@@ -28,7 +28,7 @@ func NewJSONExporter(output io.WriteCloser) Exporter {
 	return &JSONExporter{
 		elements: []*ExportGitFile{},
 		encoder:  json.NewEncoder(output),
-		writer: output,
+		writer:   output,
 	}
 }
 
