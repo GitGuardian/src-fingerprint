@@ -44,6 +44,7 @@ linters:
     - funlen
     - gocyclo
     - varnamelen
+    - ifshort # bug: https://github.com/esimonov/ifshort/issues/23
   disable-all: false
   presets:
     - bugs

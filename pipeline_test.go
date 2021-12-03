@@ -67,7 +67,33 @@ func (suite *PipelineTestSuite) TestGather() {
 	providerMock.On("Gather", "user").Return([]provider.GitRepository{createGitRepository("1")}, nil)
 
 	wg.Add(1)
-	go pipeline.gather(wg, nil, "user", outputChan)
+	go pipeline.gather(wg, nil, "user", outputChan, 0)
+
+	repositories := make([]provider.GitRepository, 0, 2)
+	for output := range outputChan {
+		repositories = append(repositories, output)
+	}
+	wg.Wait()
+
+	providerMock.AssertExpectations(suite.T())
+	assert.Equal(suite.T(), []provider.GitRepository{gitRepositoryMock{name: "1"}}, repositories)
+}
+
+func (suite *PipelineTestSuite) TestGatherWithLimit() {
+	outputChan := make(chan provider.GitRepository)
+	wg := &sync.WaitGroup{}
+	providerMock := &ProviderMock{}
+	pipeline := Pipeline{
+		Provider: providerMock,
+	}
+
+	providerMock.On("Gather", "user").Return(
+		[]provider.GitRepository{createGitRepository("1"), createGitRepository("2")},
+		nil,
+	)
+
+	wg.Add(1)
+	go pipeline.gather(wg, nil, "user", outputChan, 1)
 
 	repositories := make([]provider.GitRepository, 0, 2)
 	for output := range outputChan {
@@ -136,7 +162,7 @@ func (suite *PipelineTestSuite) TestExtractRepositories() {
 	go func() {
 		defer close(eventChan)
 
-		pipeline.ExtractRepositories("user", "", eventChan)
+		pipeline.ExtractRepositories("user", "", eventChan, 0)
 	}()
 
 	events := make([]PipelineEvent, 0)
