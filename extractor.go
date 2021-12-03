@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"regexp"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -72,9 +73,13 @@ func (fe *FastExtractor) Run(path string, after string) chan *GitFile {
 
 			var gitFile GitFile
 
-			err := json.Unmarshal(line, &gitFile)
+			// Replace backslashes by escaped backslashes
+			re := regexp.MustCompile(`\\\\(.)`)
+			cleanedLine := re.ReplaceAll(line, []byte("\\\\$1"))
+
+			err := json.Unmarshal(cleanedLine, &gitFile)
 			if err != nil {
-				log.Warnln(err)
+				log.Warnln("Error while parsing", string(line), err)
 			}
 
 			fe.ChanGitFiles <- &gitFile

@@ -21,13 +21,17 @@ var date = "unknown"
 
 const MaxPipelineEvents = 100
 
-func runExtract(pipeline *srcfingerprint.Pipeline, user string, after string) chan srcfingerprint.PipelineEvent {
+func runExtract(
+	pipeline *srcfingerprint.Pipeline,
+	user string,
+	after string,
+	limit int) chan srcfingerprint.PipelineEvent {
 	// buffer it a bit so it won't block if this is going too fast
 	ch := make(chan srcfingerprint.PipelineEvent, MaxPipelineEvents)
 
 	go func(eventChannel chan srcfingerprint.PipelineEvent) {
 		defer close(eventChannel)
-		pipeline.ExtractRepositories(user, after, eventChannel)
+		pipeline.ExtractRepositories(user, after, eventChannel, limit)
 	}(ch)
 
 	return ch
@@ -71,6 +75,7 @@ type authorInfo struct {
 }
 
 const DefaultClonerN = 8
+const DefaultLimit = 100
 
 func main() {
 	cli.VersionFlag = &cli.BoolFlag{
@@ -152,6 +157,11 @@ func main() {
 				Name:  "provider-url",
 				Usage: "base URL of the Git provider API. If not set, defaults URL are used.",
 			},
+			&cli.IntFlag{
+				Name:  "limit",
+				Value: DefaultLimit,
+				Usage: "maximum number of repositories to analyze (0 for unlimited).",
+			},
 		},
 		Action: mainAction,
 	}
@@ -165,7 +175,7 @@ func mainAction(c *cli.Context) error {
 	if c.Bool("verbose") {
 		log.SetLevel(log.InfoLevel)
 	} else {
-		log.SetLevel(log.ErrorLevel)
+		log.SetLevel(log.WarnLevel)
 	}
 
 	output := os.Stdout
@@ -226,7 +236,7 @@ func mainAction(c *cli.Context) error {
 
 	ticker := time.Tick(1 * time.Second)
 
-	eventChannel := runExtract(&pipeline, c.String("object"), c.String("after"))
+	eventChannel := runExtract(&pipeline, c.String("object"), c.String("after"), c.Int("limit"))
 
 	// runtime stats
 	var (

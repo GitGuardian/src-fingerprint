@@ -69,7 +69,8 @@ func (p *Pipeline) gather(
 	wg *sync.WaitGroup,
 	eventChan chan<- PipelineEvent,
 	user string,
-	output chan<- provider.GitRepository) {
+	output chan<- provider.GitRepository,
+	limit int) {
 	defer wg.Done()
 	defer close(output)
 
@@ -82,8 +83,21 @@ func (p *Pipeline) gather(
 
 	p.publishEvent(eventChan, RepositoryListPipelineEvent{repositories})
 
-	for _, repository := range repositories {
-		output <- repository
+	collected := 0
+	ignored := 0
+
+	for index, repository := range repositories {
+		if limit > 0 && index >= limit {
+			ignored++
+		} else {
+			collected++
+			output <- repository
+		}
+	}
+
+	if ignored > 0 {
+		log.Warnln("Limit reached for number of repositories")
+		log.Warnf("Collected %d repos, ignored %d repos.", collected, ignored)
 	}
 
 	log.Infoln("Done gathering repositories")
@@ -119,7 +133,7 @@ const (
 )
 
 // ExtractRepositories extract repositories and analyze it for a given user and provider.
-func (p *Pipeline) ExtractRepositories(user string, after string, eventChan chan<- PipelineEvent) {
+func (p *Pipeline) ExtractRepositories(user string, after string, eventChan chan<- PipelineEvent, limit int) {
 	log.Infof("Extracting user %v\n", user)
 
 	repositoryChannel := make(chan provider.GitRepository)
@@ -133,7 +147,7 @@ func (p *Pipeline) ExtractRepositories(user string, after string, eventChan chan
 
 	wg.Add(1)
 
-	go p.gather(&wg, eventChan, user, repositoryChannel)
+	go p.gather(&wg, eventChan, user, repositoryChannel, limit)
 
 	for i := 0; i < extractionWorkersCount; i++ {
 		wg.Add(1)
