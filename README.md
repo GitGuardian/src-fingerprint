@@ -15,11 +15,11 @@
 
 ## Introduction
 
-The purpose of this package is to extract some git related information (all files sha, also commits sha) from your hosted source version control system
+The purpose of `src-fingerprint` is to provide an easy way to extract git related information (namely all files sha of a repository) from your hosted source version control system.
 
-It supports 3 main on premise version control service:
+This util supports 3 main version control systems:
 
-- GitHub Enterprise
+- GitHub and GitHub Enterprise
 - Gitlab CE and EE
 - Bitbucket
 
@@ -27,9 +27,17 @@ It supports 3 main on premise version control service:
 
 ### Pre-compiled executables
 
-Get them [here](http://github.com/gitguardian/src-fingerprint/releases).
+Get the executables [here](http://github.com/gitguardian/src-fingerprint/releases).
 
-### Source
+### Using Homebrew
+
+If you're using [Homebrew](https://brew.sh/index_fr) you can add GitGuardian's tap and then install src-fingerprint. Just run the following commands :
+```shell
+brew tap gitguardian/tap
+brew install src-fingerprint
+```
+
+### From the sources
 
 You need `go` installed and `GOBIN` in your `PATH`. Once that is done, run the
 command:
@@ -58,18 +66,24 @@ $ go get -u github.com/gitguardian/src-fingerprint/cmd/src-fingerprint
 
 ## Compute my fileshas
 
+### General information
+The output format can be chosen between `jsonl`, `json`, `gzip-jsonl` and `gzip-json` with the option `--export-format`.  
+The default format is `jsonl`, but if you want to minimize the size of the output file choose `gzip-jsonl`.  
+Also, note that if you were to download fileshas for repositories of a big organization, `src-fingerprint` has a limit to process no more than 100
+repositories. You can override this limit with the option `--limit`, a limit of 0 will process all repos of the organization.
+
 ### GitHub
 
 1. Export all file SHAs from a GitHub Org with private repositories to a file with logs:
 
 ```sh
-env VCS_TOKEN="<token>" src-fingerprint -v --output fileshas_collected.json --provider github --object GitGuardian
+env VCS_TOKEN="<token>" src-fingerprint -v --export-format gzip-jsonl --output fileshas_collected.jsonl.gz --provider github --object GitGuardian
 ```
 
 2. Export all file SHAs of every repository the user can access to `stdout`:
 
 ```sh
-env VCS_TOKEN="<token>" src-fingerprint -v --provider github GitGuardian
+env VCS_TOKEN="<token>" src-fingerprint -v --provider github
 ```
 
 ### GitLab
@@ -77,7 +91,7 @@ env VCS_TOKEN="<token>" src-fingerprint -v --provider github GitGuardian
 1. Export all file SHAs from a GitLab group with private projects to a file with logs:
 
 ```sh
-env VCS_TOKEN="<token>" src-fingerprint -v --output fileshas_collected.json --provider gitlab --object "GitGuardian-dev-group"
+env VCS_TOKEN="<token>" src-fingerprint -v --export-format gzip-jsonl --output fileshas_collected.jsonl.gz --provider gitlab --object "GitGuardian-dev-group"
 ```
 
 2. Export all file SHAs of every project the user can access to `stdout`:
@@ -93,7 +107,7 @@ env VCS_TOKEN="<token>" src-fingerprint -v --provider gitlab
 1. Export all file SHAs from a Bitbucket project with private repository to a file with logs:
 
 ```sh
-env VCS_TOKEN="<token>" src-fingerprint -v --output fileshas_collected.json --provider bitbucket --object "GitGuardian Project"
+env VCS_TOKEN="<token>" src-fingerprint -v --export-format gzip-jsonl --output fileshas_collected.jsonl.gz --provider bitbucket --object "GitGuardian Project"
 ```
 
 2. Export all file SHAs of every repository the user can access to `stdout`:
