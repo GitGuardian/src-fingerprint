@@ -68,13 +68,13 @@ func (p *Pipeline) publishEvent(ch chan<- PipelineEvent, event PipelineEvent) {
 func (p *Pipeline) gather(
 	wg *sync.WaitGroup,
 	eventChan chan<- PipelineEvent,
-	user string,
+	object string,
 	output chan<- provider.GitRepository,
 	limit int) {
 	defer wg.Done()
 	defer close(output)
 
-	repositories, err := p.Provider.Gather(user)
+	repositories, err := p.Provider.Gather(object)
 	if err != nil {
 		log.Errorf("Gathering repositories failed: %v\n", err)
 
@@ -133,8 +133,12 @@ const (
 )
 
 // ExtractRepositories extract repositories and analyze it for a given user and provider.
-func (p *Pipeline) ExtractRepositories(user string, after string, eventChan chan<- PipelineEvent, limit int) {
-	log.Infof("Extracting user %v\n", user)
+func (p *Pipeline) ExtractRepositories(object string, after string, eventChan chan<- PipelineEvent, limit int) {
+	if object != "" {
+		log.Infof("Extracting all repositories for the org or group %v and accessible with the specified token.\n", object)
+	} else {
+		log.Info("Extracting all repositories accessible to the user providing the token.")
+	}
 
 	repositoryChannel := make(chan provider.GitRepository)
 
@@ -147,7 +151,7 @@ func (p *Pipeline) ExtractRepositories(user string, after string, eventChan chan
 
 	wg.Add(1)
 
-	go p.gather(&wg, eventChan, user, repositoryChannel, limit)
+	go p.gather(&wg, eventChan, object, repositoryChannel, limit)
 
 	for i := 0; i < extractionWorkersCount; i++ {
 		wg.Add(1)
@@ -164,5 +168,5 @@ func (p *Pipeline) ExtractRepositories(user string, after string, eventChan chan
 	}
 
 	wg.Wait()
-	log.Infof("Done extracting user %v\n", user)
+	log.Infof("Done extracting the org or group %v\n", object)
 }
