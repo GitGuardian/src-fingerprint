@@ -23,7 +23,7 @@ const MaxPipelineEvents = 100
 
 func runExtract(
 	pipeline *srcfingerprint.Pipeline,
-	user string,
+	object string,
 	after string,
 	limit int) chan srcfingerprint.PipelineEvent {
 	// buffer it a bit so it won't block if this is going too fast
@@ -31,7 +31,7 @@ func runExtract(
 
 	go func(eventChannel chan srcfingerprint.PipelineEvent) {
 		defer close(eventChannel)
-		pipeline.ExtractRepositories(user, after, eventChannel, limit)
+		pipeline.ExtractRepositories(object, after, eventChannel, limit)
 	}(ch)
 
 	return ch

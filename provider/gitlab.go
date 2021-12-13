@@ -62,14 +62,17 @@ func createFromGitlabRepo(r *gitlab.Project) *Repository {
 	}
 }
 
-func (p *GitLabProvider) gatherAccessiblePage(page int) ([]GitRepository, int, error) {
+func (p *GitLabProvider) gatherAccessiblePage(page int, verbose bool) ([]GitRepository, int, error) {
 	opt := &gitlab.ListProjectsOptions{
 		ListOptions: gitlab.ListOptions{
 			PerPage: reposPerPage, Page: page,
 		}, Statistics: gitlab.Bool(true),
+		Membership: gitlab.Bool(true),
 	}
 
-	log.Infof("Gathering page %v for %v\n", page, p.client.BaseURL())
+	if verbose {
+		log.Infof("Gathering page %v for %v\n", page, p.client.BaseURL())
+	}
 
 	repos, resp, err := p.client.Projects.ListProjects(opt)
 	if err != nil {
@@ -89,7 +92,7 @@ func (p *GitLabProvider) gatherAccessiblePage(page int) ([]GitRepository, int, e
 	return repositories, resp.TotalPages, nil
 }
 
-func (p *GitLabProvider) gatherGroupProjectPage(groupID, page int) ([]GitRepository, int, error) {
+func (p *GitLabProvider) gatherGroupProjectPage(groupID, page int, verbose bool) ([]GitRepository, int, error) {
 	opt := &gitlab.ListGroupProjectsOptions{
 		ListOptions: gitlab.ListOptions{
 			PerPage: reposPerPage,
@@ -97,7 +100,9 @@ func (p *GitLabProvider) gatherGroupProjectPage(groupID, page int) ([]GitReposit
 		},
 	}
 
-	log.Infof("Gathering page %v for %v\n", page, p.client.BaseURL())
+	if verbose {
+		log.Infof("Gathering page %v for %v\n", page, p.client.BaseURL())
+	}
 
 	repos, resp, err := p.client.Groups.ListGroupProjects(groupID, opt)
 	if err != nil {
@@ -130,7 +135,7 @@ func (p *GitLabProvider) findGroup(name string) (int, error) {
 	}
 
 	for _, group := range groups {
-		if strings.EqualFold(group.FullPath, name) {
+		if strings.EqualFold(group.FullName, name) || strings.EqualFold(group.FullPath, name) {
 			return group.ID, nil
 		}
 	}
@@ -139,13 +144,11 @@ func (p *GitLabProvider) findGroup(name string) (int, error) {
 }
 
 // Gather gathers user's repositories for the configured token.
-func (p *GitLabProvider) Gather(user string) ([]GitRepository, error) {
-	log.Debugf("Gathering repositories for user %s\n", user)
-
+func (p *GitLabProvider) Gather(object string) ([]GitRepository, error) {
 	// repositories protected by mu, since multiple goroutines will access it
 	repositories := make([]GitRepository, 0)
-	if user != "" {
-		repositories = p.collectFromGroup(repositories, user)
+	if object != "" {
+		repositories = p.collectFromGroup(repositories, object)
 	} else {
 		repositories = p.collectAllAccessible(repositories)
 	}
@@ -159,7 +162,7 @@ func (p *GitLabProvider) collectAllAccessible(
 
 	var mu sync.Mutex
 
-	_, totalPages, err := p.gatherAccessiblePage(1)
+	_, totalPages, err := p.gatherAccessiblePage(1, false)
 	if err != nil {
 		log.Errorf("Error gathering first page: %v\n", err)
 
@@ -172,7 +175,7 @@ func (p *GitLabProvider) collectAllAccessible(
 		go func(page int) {
 			defer wg.Done()
 
-			pageRepositories, _, err := p.gatherAccessiblePage(page)
+			pageRepositories, _, err := p.gatherAccessiblePage(page, true)
 			if err != nil {
 				log.Errorf("Error gathering page %v:%v\n", page, err)
 
@@ -181,6 +184,7 @@ func (p *GitLabProvider) collectAllAccessible(
 
 			mu.Lock()
 			repositories = append(repositories, pageRepositories...)
+
 			mu.Unlock()
 		}(pageCount)
 	}
@@ -191,10 +195,10 @@ func (p *GitLabProvider) collectAllAccessible(
 }
 
 func (p *GitLabProvider) collectFromGroup(repositories []GitRepository,
-	user string) []GitRepository {
-	groupID, err := p.findGroup(user)
+	object string) []GitRepository {
+	groupID, err := p.findGroup(object)
 	if err != nil {
-		log.Errorf("Error finding group: %v\n", err)
+		log.Errorf("Error finding group '%v' : %v\n", object, err)
 
 		return repositories
 	}
@@ -203,12 +207,14 @@ func (p *GitLabProvider) collectFromGroup(repositories []GitRepository,
 
 	var mu sync.Mutex
 
-	_, totalPages, err := p.gatherGroupProjectPage(groupID, 1)
+	_, totalPages, err := p.gatherGroupProjectPage(groupID, 1, false)
 	if err != nil {
 		log.Errorf("Error gathering first page: %v\n", err)
 
 		return repositories
 	}
+
+	log.Infof("Gathering repositories for group %s\n", object)
 
 	for pageCount := 1; pageCount <= totalPages; pageCount++ {
 		wg.Add(1)
@@ -216,7 +222,7 @@ func (p *GitLabProvider) collectFromGroup(repositories []GitRepository,
 		go func(page int) {
 			defer wg.Done()
 
-			pageRepositories, _, err := p.gatherGroupProjectPage(groupID, page)
+			pageRepositories, _, err := p.gatherGroupProjectPage(groupID, page, true)
 			if err != nil {
 				log.Errorf("Error gathering page %v:%v\n", page, err)
 
