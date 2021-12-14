@@ -41,7 +41,7 @@ func (fe *FastExtractor) Run(path string, after string) chan *GitFile {
 		cmdRevList = fmt.Sprintf("git rev-list --objects --all --after '%s'", after)
 	}
 
-	cmdBase := cmdRevList + "| git cat-file --batch-check='{\"sha\": \"%(objectname)\", \"type\": \"%(objecttype)\", \"filepath\": \"%(rest)\", \"size\": \"%(objectsize)\"}' | grep '\"type\": \"blob\"'" //nolint
+	cmdBase := cmdRevList + "| git cat-file --batch-check='{\"sha\": \"%(objectname)\", \"type\": \"%(objecttype)\", \"filepath\": \"%(rest)\", \"size\": \"%(objectsize)\"}' | grep '\"type\": \"blob\"' | sort | uniq" //nolint
 	cmd := exec.Command("bash", "-c", cmdBase)
 	cmd.Dir = path
 
