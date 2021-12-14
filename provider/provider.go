@@ -42,6 +42,10 @@ type Options struct {
 	OmitForks bool
 	// SkipArchived will skip archived repositories
 	SkipArchived bool
+	// Repository private status to display in the output if the provider is 'repository'
+	RespositoryIsPrivate bool
 	// BaseURL is the base URL of the API
 	BaseURL string
+	// Repository name to display in the output if the provider is 'repository'
+	RepositoryName string
 }

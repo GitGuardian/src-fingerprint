@@ -35,10 +35,11 @@ func (r *Repository) GetStorageSize() int64 { return r.storageSize }
 func (r *Repository) GetPrivate() bool { return r.private }
 
 type GenericProvider struct {
+	options Options
 }
 
 func NewGenericProvider(options Options) Provider {
-	return &GenericProvider{}
+	return &GenericProvider{options}
 }
 
 func (p *GenericProvider) Gather(user string) ([]GitRepository, error) {
@@ -47,11 +48,11 @@ func (p *GenericProvider) Gather(user string) ([]GitRepository, error) {
 	}
 
 	return []GitRepository{&Repository{
-		name:        "",
+		name:        p.options.RepositoryName,
 		httpURL:     user,
 		createdAt:   time.Time{},
 		storageSize: 0,
-		private:     true,
+		private:     p.options.RespositoryIsPrivate,
 	}}, nil
 }
 

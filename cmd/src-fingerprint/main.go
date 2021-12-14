@@ -138,6 +138,15 @@ func main() {
 				Usage:    "vcs provider. options: 'gitlab'/'github'/'bitbucket'/'repository'",
 			},
 			&cli.StringFlag{
+				Name:  "repo-name",
+				Usage: "Name of the repository to display in outputs if the provider is 'repository'",
+			},
+			&cli.BoolFlag{
+				Name:  "repo-is-private",
+				Value: false,
+				Usage: "Private status value to display in outputs if the provider is 'repository'",
+			},
+			&cli.StringFlag{
 				Name:    "token",
 				Aliases: []string{"t"},
 				Usage:   "token for vcs access.",
@@ -204,9 +213,11 @@ func mainAction(c *cli.Context) error {
 	var srcCloner cloner.Cloner = cloner.NewDiskCloner(c.String("clone-dir"))
 
 	providerOptions := provider.Options{
-		OmitForks:    !c.Bool("extract-forks"),
-		SkipArchived: c.Bool("skip-archived"),
-		BaseURL:      c.String("provider-url"),
+		OmitForks:            !c.Bool("extract-forks"),
+		SkipArchived:         c.Bool("skip-archived"),
+		BaseURL:              c.String("provider-url"),
+		RepositoryName:       c.String("repo-name"),
+		RespositoryIsPrivate: c.Bool("repo-is-private"),
 	}
 
 	defer func() {
