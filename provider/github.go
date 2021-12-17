@@ -78,13 +78,21 @@ func (p *GitHubProvider) gatherPage(user string, page int) ([]GitRepository, err
 		resp       *github.Response
 		repos      []*github.Repository
 		collectErr error
+		visibility string
 	)
+
+	if p.options.AllRepositories {
+		visibility = "all"
+	} else {
+		visibility = "private"
+	}
 
 	if p.isOrg {
 		opt := &github.RepositoryListByOrgOptions{
 			ListOptions: github.ListOptions{
 				PerPage: reposPerPage, Page: 1,
 			},
+			Type: visibility,
 		}
 		repos, resp, collectErr = p.client.Repositories.ListByOrg(context.Background(), user, opt)
 
@@ -98,6 +106,7 @@ func (p *GitHubProvider) gatherPage(user string, page int) ([]GitRepository, err
 			ListOptions: github.ListOptions{
 				PerPage: reposPerPage, Page: 1,
 			},
+			Visibility: visibility,
 		}
 
 		repos, resp, collectErr = p.client.Repositories.List(context.Background(), user, opt)
