@@ -137,6 +137,11 @@ func main() {
 				Required: true,
 				Usage:    "vcs provider. options: 'gitlab'/'github'/'bitbucket'/'repository'",
 			},
+			&cli.BoolFlag{
+				Name:  "all",
+				Value: false,
+				Usage: "Collect hashes from every accessible repository, not just private repositories if the provider is 'github'",
+			},
 			&cli.StringFlag{
 				Name:  "repo-name",
 				Usage: "Name of the repository to display in outputs if the provider is 'repository'",
@@ -216,6 +221,7 @@ func mainAction(c *cli.Context) error {
 		OmitForks:            !c.Bool("extract-forks"),
 		SkipArchived:         c.Bool("skip-archived"),
 		BaseURL:              c.String("provider-url"),
+		AllRepositories:      c.Bool("all"),
 		RepositoryName:       c.String("repo-name"),
 		RespositoryIsPrivate: c.Bool("repo-is-private"),
 	}
