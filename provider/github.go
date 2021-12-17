@@ -90,7 +90,7 @@ func (p *GitHubProvider) gatherPage(user string, page int) ([]GitRepository, err
 	if p.isOrg {
 		opt := &github.RepositoryListByOrgOptions{
 			ListOptions: github.ListOptions{
-				PerPage: reposPerPage, Page: 1,
+				PerPage: reposPerPage, Page: page,
 			},
 			Type: visibility,
 		}
@@ -104,7 +104,7 @@ func (p *GitHubProvider) gatherPage(user string, page int) ([]GitRepository, err
 	if !p.isOrg {
 		opt := &github.RepositoryListOptions{
 			ListOptions: github.ListOptions{
-				PerPage: reposPerPage, Page: 1,
+				PerPage: reposPerPage, Page: page,
 			},
 			Visibility: visibility,
 		}
