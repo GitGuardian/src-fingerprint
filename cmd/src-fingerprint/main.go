@@ -140,7 +140,7 @@ func main() {
 			&cli.BoolFlag{
 				Name:  "all",
 				Value: false,
-				Usage: "Collect hashes from every accessible repository, not just private repositories if the provider is 'github'",
+				Usage: "Collect fileshas from every accessible repository including public ones if the provider is 'github'",
 			},
 			&cli.StringFlag{
 				Name:  "repo-name",

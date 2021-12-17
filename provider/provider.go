@@ -44,8 +44,8 @@ type Options struct {
 	SkipArchived bool
 	// Repository private status to display in the output if the provider is 'repository'
 	RespositoryIsPrivate bool
-	// AllRepositories collect hashes from every accessible repository,
-	// not just private repositories if the provider is 'github'
+	// AllRepositories collects fileshas from every accessible repository
+	// including public ones. This is only used by "github" provider
 	AllRepositories bool
 	// BaseURL is the base URL of the API
 	BaseURL string
