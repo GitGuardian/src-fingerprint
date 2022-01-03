@@ -10,16 +10,29 @@ builds:
       - linux
       - windows
       - darwin
+    goarch:
+      - amd64
+      - arm64
     main: ./cmd/src-fingerprint
     # Default build flags is `-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser`.
+
+nfpms:
+  - formats:
+      - deb
+      - rpm
+    dependencies:
+      - git
+    bindir: /usr/bin
+    vendor: GitGuardian
+    maintainer: GitGuardian <dev@gitguardian.com>
+    replacements:
+      linux: Linux
 
 archives:
   - replacements:
       darwin: Darwin
       linux: Linux
       windows: Windows
-      386: i386
-      amd64: x86_64
 checksum:
   name_template: "checksums.txt"
 snapshot:
@@ -32,8 +45,7 @@ changelog:
       - "^test:"
 
 brews:
-  -
-    name: src-fingerprint
+  - name: src-fingerprint
     tap:
       owner: gitguardian
       name: homebrew-tap
