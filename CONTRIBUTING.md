@@ -77,3 +77,10 @@ What we have done for now to improve performance:
 
 Using go-git resulted in in-memory cloning (stream to memory and then to directory).
 This caused too high peaks of memory unsuitable for small VMs.
+
+## Packaging
+
+Packaging is done using [GoReleaser](https://goreleaser.com/) and
+[nFPM](https://nfpm.goreleaser.com/).
+
+You can test packaging using `make dist`.

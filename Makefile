@@ -34,5 +34,10 @@ test:
 .PHONY: build
 build: $(BIN)
 
+# Use this target to test packaging
+.PHONY: dist
+dist:
+	goreleaser release --skip-publish --skip-validate --rm-dist
+
 $(BIN): $(SOURCES)
 	$(GO) build $(GOFLAGS) -ldflags '-s -w $(LDFLAGS)' $(EXTRA_GOFLAGS) -o $@ ./cmd/$(BIN)
