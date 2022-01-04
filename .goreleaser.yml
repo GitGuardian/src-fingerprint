@@ -25,8 +25,16 @@ nfpms:
     bindir: /usr/bin
     vendor: GitGuardian
     maintainer: GitGuardian <dev@gitguardian.com>
+    license: MIT
+    homepage: https://github.com/GitGuardian/src-fingerprint
+    description: "Extract git related information (file shas, commit shas) from your version control system."
     replacements:
       linux: Linux
+    contents:
+      - src: README.md
+        dst: /usr/share/doc/src-fingerprint/README.md
+      - src: LICENSE
+        dst: /usr/share/doc/src-fingerprint/LICENSE
 
 archives:
   - replacements:
