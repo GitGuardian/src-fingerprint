@@ -77,20 +77,20 @@ repositories. You can override this limit with the option `--limit`, a limit of 
 
 ### Default behavior
 
-Note that by default **for github provider**, `src-fingerprint` will exclude private repositories, forks and archived repositories from the fingerprints computation. Use options `-e` or `--all` to change this behavior.
+Note that by default, `src-fingerprint` will exclude forked repositories from the fingerprints computation. **For GitHub provider** archived repositories and public repositories will also be excluded by default. Use flags `--include-forked-repos`, `--include-archived-repos` or `include-public-repos` to change this behavior.
 
 ### GitHub
 
 1. Export all fingerprints from private repositories from a GitHub Org to the default path `./fingerprints.jsonl.gz` with logs:
 
 ```sh
-env VCS_TOKEN="<token>" src-fingerprint -v --provider github --object ORG_NAME --all
+env VCS_TOKEN="<token>" src-fingerprint -v --provider github --object ORG_NAME
 ```
 
 2. Export all fingerprints of every repository the user can access to the default path `./fingerprints.jsonl.gz`:
 
 ```sh
-env VCS_TOKEN="<token>" src-fingerprint -v --provider github --all
+env VCS_TOKEN="<token>" src-fingerprint -v --provider github --include-public-repos --include-forked-repos --include-archived-repos
 ```
 
 ### GitLab
@@ -103,10 +103,8 @@ env VCS_TOKEN="<token>" src-fingerprint -v --provider gitlab --object "GitGuardi
 
 2. Export all fingerprints of every project the user can access to the default path `./fingerprints.jsonl.gz` with logs:
 
-> :warning: On `gitlab.com` this will attempt to retrieve all repositories on `gitlab.com`
-
 ```sh
-env VCS_TOKEN="<token>" src-fingerprint -v --provider gitlab
+env VCS_TOKEN="<token>" src-fingerprint -v --provider gitlab --include-forked-repos
 ```
 
 ### Bitbucket server (formely Atlassian Stash)
