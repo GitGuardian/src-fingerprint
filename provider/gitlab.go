@@ -82,7 +82,7 @@ func (p *GitLabProvider) gatherAccessiblePage(page int, verbose bool) ([]GitRepo
 	repositories := make([]GitRepository, 0, len(repos))
 
 	for _, repo := range repos {
-		if p.options.OmitForks && repo.ForkedFromProject != nil {
+		if !p.options.IncludeForkedRepos && repo.ForkedFromProject != nil {
 			continue
 		}
 
@@ -112,7 +112,7 @@ func (p *GitLabProvider) gatherGroupProjectPage(groupID, page int, verbose bool)
 	repositories := make([]GitRepository, 0, len(repos))
 
 	for _, repo := range repos {
-		if p.options.OmitForks && repo.ForkedFromProject != nil {
+		if !p.options.IncludeForkedRepos && repo.ForkedFromProject != nil {
 			continue
 		}
 

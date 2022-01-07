@@ -99,13 +99,17 @@ func main() {
 				Usage:   "verbose logging",
 			},
 			&cli.BoolFlag{
-				Name:    "extract-forks",
-				Aliases: []string{"e"},
-				Value:   false,
-				Usage:   "extract fork repositories when possible",
+				Name:  "include-forked-repos",
+				Value: false,
+				Usage: "include forked repositories when possible",
 			},
 			&cli.BoolFlag{
-				Name:  "skip-archived",
+				Name:  "include-public-repos",
+				Value: false,
+				Usage: "Include fileshas from both public and private repositories if the provider is 'github'",
+			},
+			&cli.BoolFlag{
+				Name:  "include-archived-repos",
 				Value: false,
 				Usage: "skip archived repositories",
 			},
@@ -136,11 +140,6 @@ func main() {
 				Aliases:  []string{"p"},
 				Required: true,
 				Usage:    "vcs provider. options: 'gitlab'/'github'/'bitbucket'/'repository'",
-			},
-			&cli.BoolFlag{
-				Name:  "all",
-				Value: false,
-				Usage: "Collect fileshas from every accessible repository including public ones if the provider is 'github'",
 			},
 			&cli.StringFlag{
 				Name:  "repo-name",
@@ -218,10 +217,10 @@ func mainAction(c *cli.Context) error {
 	var srcCloner cloner.Cloner = cloner.NewDiskCloner(c.String("clone-dir"))
 
 	providerOptions := provider.Options{
-		OmitForks:            !c.Bool("extract-forks"),
-		SkipArchived:         c.Bool("skip-archived"),
+		IncludeForkedRepos:   c.Bool("include-forked-repos"),
+		IncludeArchivedRepos: c.Bool("include-archived-repos"),
+		IncludePublicRepos:   c.Bool("include-public-repos"),
 		BaseURL:              c.String("provider-url"),
-		AllRepositories:      c.Bool("all"),
 		RepositoryName:       c.String("repo-name"),
 		RespositoryIsPrivate: c.Bool("repo-is-private"),
 	}

@@ -81,7 +81,7 @@ func (p *GitHubProvider) gatherPage(user string, page int) ([]GitRepository, err
 		visibility string
 	)
 
-	if p.options.AllRepositories {
+	if p.options.IncludePublicRepos {
 		visibility = "all"
 	} else {
 		visibility = "private"
@@ -123,11 +123,11 @@ func (p *GitHubProvider) gatherPage(user string, page int) ([]GitRepository, err
 	repositories := make([]GitRepository, 0, len(repos))
 
 	for _, repo := range repos {
-		if p.options.OmitForks && repo.GetFork() {
+		if !p.options.IncludeForkedRepos && repo.GetFork() {
 			continue
 		}
 
-		if p.options.SkipArchived && repo.Archived != nil && *repo.Archived {
+		if !p.options.IncludeArchivedRepos && repo.Archived != nil && *repo.Archived {
 			continue
 		}
 

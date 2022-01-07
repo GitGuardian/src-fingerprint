@@ -38,15 +38,17 @@ type Provider interface {
 
 // Options represents options for the Provider.
 type Options struct {
-	// OmitForks will tell the Provider to omit fork repositories
-	OmitForks bool
-	// SkipArchived will skip archived repositories
-	SkipArchived bool
+	// IncludeForkedRepos will include fork repositories in fingerprints computation
+	// This is available for GitLab and GitHub providers only.
+	IncludeForkedRepos bool
+	// IncludeArchivedRepos will include archived repositories in fingerprints computation
+	// This is only available for GitHub provider only.
+	IncludeArchivedRepos bool
+	// IncludePublicRepos will include public repositories in fingerprints computation
+	// This is only available for GitHub provider only.
+	IncludePublicRepos bool
 	// Repository private status to display in the output if the provider is 'repository'
 	RespositoryIsPrivate bool
-	// AllRepositories collects fileshas from every accessible repository
-	// including public ones. This is only used by "github" provider
-	AllRepositories bool
 	// BaseURL is the base URL of the API
 	BaseURL string
 	// Repository name to display in the output if the provider is 'repository'
