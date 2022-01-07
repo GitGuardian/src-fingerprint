@@ -112,14 +112,14 @@ func main() {
 			&cli.StringFlag{
 				Name:    "output",
 				Aliases: []string{"o"},
-				Value:   "-",
-				Usage:   "set output path to `FILE`. stdout by default",
+				Value:   "./fingerprints.jsonl.gz",
+				Usage:   "set output path to `FILE`. Use \"-\" to redirect to stdout.",
 			},
 			&cli.StringFlag{
 				Name:    "export-format",
 				Aliases: []string{"f"},
-				Value:   "jsonl",
-				Usage:   "export format: 'jsonl'/'gzip-jsonl'/'json'/'gzip-json'. 'jsonl' by default",
+				Value:   "gzip-jsonl",
+				Usage:   "export format: 'jsonl'/'gzip-jsonl'/'json'/'gzip-json'",
 			},
 			&cli.StringFlag{
 				Name:  "clone-dir",

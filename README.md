@@ -6,7 +6,7 @@
   - [Generate My Token](#generate-my-token)
     - [GitHub](#github)
     - [GitLab](#gitlab)
-  - [Compute my fileshas](#compute-my-fileshas)
+  - [Compute my code fingerprints](#compute-my-code-fingerprints)
     - [GitHub](#github-1)
     - [GitLab](#gitlab-1)
     - [Bitbucket server (formely Atlassian Stash)](#bitbucket-server-formely-atlassian-stash)
@@ -15,7 +15,7 @@
 
 ## Introduction
 
-The purpose of `src-fingerprint` is to provide an easy way to extract git related information (namely all files sha of a repository) from your hosted source version control system.
+The purpose of `src-fingerprint` is to provide an easy way to extract git related information (namely all file shas of a repository) from your hosted source version control system.
 
 This util supports 3 main version control systems:
 
@@ -32,6 +32,7 @@ Get the executables [here](http://github.com/gitguardian/src-fingerprint/release
 ### Using Homebrew
 
 If you're using [Homebrew](https://brew.sh/index_fr) you can add GitGuardian's tap and then install src-fingerprint. Just run the following commands :
+
 ```shell
 brew tap gitguardian/tap
 brew install src-fingerprint
@@ -64,37 +65,43 @@ $ go get -u github.com/gitguardian/src-fingerprint/cmd/src-fingerprint
 3. Click the `read repository` box. This is the only scope we need. You can set an end-date for the token validity if you want more security
 4. Click on `Create personal token`. The token will only be available at this time so make sure you keep it in a safe place
 
-## Compute my fileshas
+## Compute my code fingerprints
 
 ### General information
+
 The output format can be chosen between `jsonl`, `json`, `gzip-jsonl` and `gzip-json` with the option `--export-format`.  
-The default format is `jsonl`, but if you want to minimize the size of the output file choose `gzip-jsonl`.  
-Also, note that if you were to download fileshas for repositories of a big organization, `src-fingerprint` has a limit to process no more than 100
+The default format is `gzip-jsonl` to minimize the size of the output file.  
+The default output filepath is `./fingerprints.jsonl.gz`. Use `--output` to override this behavior.  
+Also, note that if you were to download fingerprints for repositories of a big organization, `src-fingerprint` has a limit to process no more than 100
 repositories. You can override this limit with the option `--limit`, a limit of 0 will process all repos of the organization.
+
+### Default behavior
+
+Note that by default **for github provider**, `src-fingerprint` will exclude private repositories, forks and archived repositories from the fingerprints computation. Use options `-e` or `--all` to change this behavior.
 
 ### GitHub
 
-1. Export all file SHAs from a GitHub Org with private repositories to a file with logs:
+1. Export all fingerprints from private repositories from a GitHub Org to the default path `./fingerprints.jsonl.gz` with logs:
 
 ```sh
-env VCS_TOKEN="<token>" src-fingerprint -v --export-format gzip-jsonl --output fileshas_collected.jsonl.gz --provider github --object GitGuardian
+env VCS_TOKEN="<token>" src-fingerprint -v --provider github --object ORG_NAME --all
 ```
 
-2. Export all file SHAs of every repository the user can access to `stdout`:
+2. Export all fingerprints of every repository the user can access to the default path `./fingerprints.jsonl.gz`:
 
 ```sh
-env VCS_TOKEN="<token>" src-fingerprint -v --provider github
+env VCS_TOKEN="<token>" src-fingerprint -v --provider github --all
 ```
 
 ### GitLab
 
-1. Export all file SHAs from a GitLab group with private projects to a file with logs:
+1. Export all fingerprints from private repositories of a GitLab group to the default path `./fingerprints.jsonl.gz` with logs:
 
 ```sh
-env VCS_TOKEN="<token>" src-fingerprint -v --export-format gzip-jsonl --output fileshas_collected.jsonl.gz --provider gitlab --object "GitGuardian-dev-group"
+env VCS_TOKEN="<token>" src-fingerprint -v --provider gitlab --object "GitGuardian-dev-group"
 ```
 
-2. Export all file SHAs of every project the user can access to `stdout`:
+2. Export all fingerprints of every project the user can access to the default path `./fingerprints.jsonl.gz` with logs:
 
 > :warning: On `gitlab.com` this will attempt to retrieve all repositories on `gitlab.com`
 
@@ -104,13 +111,13 @@ env VCS_TOKEN="<token>" src-fingerprint -v --provider gitlab
 
 ### Bitbucket server (formely Atlassian Stash)
 
-1. Export all file SHAs from a Bitbucket project with private repository to a file with logs:
+1. Export all fingerprints from a Bitbucket project with private repository to the default path `./fingerprints.jsonl.gz` with logs:
 
 ```sh
-env VCS_TOKEN="<token>" src-fingerprint -v --export-format gzip-jsonl --output fileshas_collected.jsonl.gz --provider bitbucket --object "GitGuardian Project"
+env VCS_TOKEN="<token>" src-fingerprint -v --provider bitbucket --object "GitGuardian Project"
 ```
 
-2. Export all file SHAs of every repository the user can access to `stdout`:
+2. Export all fingerprints of every repository the user can access to the default path `./fingerprints.jsonl.gz` with logs:
 
 ```sh
 env VCS_TOKEN="<token>" src-fingerprint -v --provider bitbucket
@@ -151,4 +158,5 @@ src-fingerprint -p repository -u .
 ```
 
 ## License
+
 GitGuardian `src-fingerprint` is MIT licensed.
