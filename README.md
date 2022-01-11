@@ -38,6 +38,15 @@ brew tap gitguardian/tap
 brew install src-fingerprint
 ```
 
+### Linux packages
+
+Deb and RPM packages are available on [Cloudsmith](https://cloudsmith.io/~gitguardian/repos/src-fingerprint/packages/).
+
+Setup instructions:
+
+- [Deb packages](https://cloudsmith.io/~gitguardian/repos/src-fingerprint/setup/#formats-deb)
+- [RPM packages](https://cloudsmith.io/~gitguardian/repos/src-fingerprint/setup/#formats-rpm)
+
 ### From the sources
 
 You need `go` installed and `GOBIN` in your `PATH`. Once that is done, run the

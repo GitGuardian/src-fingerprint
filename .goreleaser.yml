@@ -17,7 +17,8 @@ builds:
     # Default build flags is `-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser`.
 
 nfpms:
-  - formats:
+  - id: deb_rpm
+    formats:
       - deb
       - rpm
     dependencies:
@@ -70,3 +71,11 @@ brews:
     commit_msg_template: "Brew formula update for {{ .ProjectName }} version {{ .Tag }}"
     folder: Formula
     description: "src-fingerprint is a CLI util to easily compute the fileshas associated to a set of git repositories."
+
+publishers:
+  - name: cloudsmith
+    ids:
+      - deb_rpm
+    cmd: "scripts/goreleaser-cloudsmith-publisher {{ .Version }} {{ abs .ArtifactPath }}"
+    env:
+      - CLOUDSMITH_API_KEY={{ .Env.CLOUDSMITH_API_KEY }}
