@@ -1,0 +1,18 @@
+#!/bin/bash
+set -euo pipefail
+
+version="$1"
+artifact_path="$2"
+
+case "$artifact_path" in
+    *.deb)
+        cloudsmith push deb gitguardian/src-fingerprint/any-distro/any-version "$artifact_path"
+        ;;
+    *.rpm)
+        cloudsmith push rpm gitguardian/src-fingerprint/any-distro/any-version "$artifact_path"
+        ;;
+    *)
+        echo "Unsupported artifact format '$artifact_path'"
+        exit 1
+        ;;
+esac
