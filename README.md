@@ -75,6 +75,20 @@ The default output filepath is `./fingerprints.jsonl.gz`. Use `--output` to over
 Also, note that if you were to download fingerprints for repositories of a big organization, `src-fingerprint` has a limit to process no more than 100
 repositories. You can override this limit with the option `--limit`, a limit of 0 will process all repos of the organization.
 
+### Sample output
+
+Here is an example of some lines of a `.jsonl` format output:
+
+```shell
+{"repository_name":"src-fingerprint","private":false,"sha":"a0c16efce5e767f04ba0c6988d121147099a17df","type":"blob","filepath":".env.example","size":"31"}
+{"repository_name":"src-fingerprint","private":false,"sha":"d425eb0f8af66203dbeef50c921ea5bff0f2acba","type":"blob","filepath":".github/workflows/tag.yml","size":"882"}
+{"repository_name":"src-fingerprint","private":false,"sha":"c7f341033d78474b125dd56d8adaa3f0fc47faf2","type":"blob","filepath":".github/workflows/test.yml","size":"899"}
+{"repository_name":"src-fingerprint","private":false,"sha":"f4409d88950abd4585d8938571864726533a7fa5","type":"blob","filepath":".gitignore","size":"356"}
+{"repository_name":"src-fingerprint","private":false,"sha":"f733f951ace2e032c270d2f3cf79c2efb8187b5b","type":"blob","filepath":".gitlab-ci.yml","size":"85"}
+{"repository_name":"src-fingerprint","private":false,"sha":"d17ae66a017477bc65a2f433bf23d551ffc6bd75","type":"blob","filepath":".golangci.yml","size":"1196"}
+{"repository_name":"src-fingerprint","private":false,"sha":"ee08a617cfb1c63c1c55fa4cb15e8bac0095346f","type":"blob","filepath":".goreleaser.yml","size":"2127"}
+```
+
 ### Default behavior
 
 Note that by default, `src-fingerprint` will exclude forked repositories from the fingerprints computation. **For GitHub provider** archived repositories and public repositories will also be excluded by default. Use flags `--include-forked-repos`, `--include-archived-repos` or `include-public-repos` to change this behavior.
