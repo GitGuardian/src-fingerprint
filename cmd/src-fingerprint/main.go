@@ -101,17 +101,17 @@ func main() {
 			&cli.BoolFlag{
 				Name:  "include-forked-repos",
 				Value: false,
-				Usage: "include forked repositories when possible",
+				Usage: "include forked repositories. Available for 'github' and 'gitlab' providers.",
 			},
 			&cli.BoolFlag{
 				Name:  "include-public-repos",
 				Value: false,
-				Usage: "Include fileshas from both public and private repositories if the provider is 'github'",
+				Usage: "Include fileshas from both public and private repositories. Available for 'github' provider only.",
 			},
 			&cli.BoolFlag{
 				Name:  "include-archived-repos",
 				Value: false,
-				Usage: "skip archived repositories",
+				Usage: "Include archived repositories. Available for 'github' provider only.",
 			},
 			&cli.StringFlag{
 				Name:    "output",
