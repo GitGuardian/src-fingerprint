@@ -106,7 +106,8 @@ func (p *GitHubProvider) gatherPage(user string, page int) ([]GitRepository, err
 			ListOptions: github.ListOptions{
 				PerPage: reposPerPage, Page: page,
 			},
-			Visibility: visibility,
+			Visibility:  visibility,
+			Affiliation: "owner",
 		}
 
 		repos, resp, collectErr = p.client.Repositories.List(context.Background(), user, opt)

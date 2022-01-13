@@ -101,7 +101,8 @@ Note that by default, `src-fingerprint` will exclude forked repositories from th
 env VCS_TOKEN="<token>" src-fingerprint -v --provider github --object ORG_NAME
 ```
 
-2. Export all fingerprints of every repository the user can access to the default path `./fingerprints.jsonl.gz`:
+2. Export all fingerprints of every repository the user owns to the default path `./fingerprints.jsonl.gz`:
+   **Important note :** For this usecase, you shall NOT use the `--object USERNAME` option, as this will indeed look for repos belonging to the user `USERNAME`, but without the authentication taken into account, hence omitting private repositories.
 
 ```sh
 env VCS_TOKEN="<token>" src-fingerprint -v --provider github --include-public-repos --include-forked-repos --include-archived-repos
