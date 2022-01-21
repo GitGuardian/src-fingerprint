@@ -85,12 +85,14 @@ func (fe *FastExtractor) Run(path string, after string) chan *GitFile {
 			fe.ChanGitFiles <- &gitFile
 		}
 
-		close(fe.ChanGitFiles)
-		log.Infof("finishing iterating over files, we have collected %d files\n", num)
+		log.Infof("finished iterating over files, we have collected %d files\n", num)
 
 		if err := os.RemoveAll(path); err != nil {
 			log.Errorln("Unable to remove directory ", path)
 		}
+
+		log.Infof("Correctly removed cloned directory %s", path)
+		close(fe.ChanGitFiles)
 	}()
 
 	return fe.ChanGitFiles
