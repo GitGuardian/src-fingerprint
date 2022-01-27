@@ -79,10 +79,11 @@ func (fe *FastExtractor) Run(path string, after string) chan *GitFile {
 
 			err := json.Unmarshal(cleanedLine, &gitFile)
 			if err != nil {
+				// If an error occurs, print a warning and do nothing with the line
 				log.Warnln("Error while parsing", string(line), err)
+			} else {
+				fe.ChanGitFiles <- &gitFile
 			}
-
-			fe.ChanGitFiles <- &gitFile
 		}
 
 		log.Infof("finished iterating over files, we have collected %d files\n", num)
