@@ -1,17 +1,18 @@
 # src-fingerprint
 
-- [src-fingerprint](#src-fingerprint)
-  - [Introduction](#introduction)
-  - [Install](#install)
-  - [Generate My Token](#generate-my-token)
+- [Introduction](#introduction)
+- [Installation](#installation)
+	- [Using pre-compiled executables](#using-pre-compiled-executables)
+	- [Installing from sources](#installing-from-sources)
+- [Generate My Token](#generate-my-token)
     - [GitHub](#github)
     - [GitLab](#gitlab)
-  - [Compute my code fingerprints](#compute-my-code-fingerprints)
+- [Compute my code fingerprints](#compute-my-code-fingerprints)
     - [GitHub](#github-1)
     - [GitLab](#gitlab-1)
     - [Bitbucket server (formely Atlassian Stash)](#bitbucket-server-formely-atlassian-stash)
     - [Repository](#repository)
-  - [License](#License)
+- [License](#License)
 
 ## Introduction
 
@@ -23,22 +24,20 @@ This util supports 3 main version control systems:
 - Gitlab CE and EE
 - Bitbucket
 
-## Install
+## Installation
 
-### Pre-compiled executables
+### Using pre-compiled executables
 
-Get the executables [here](http://github.com/gitguardian/src-fingerprint/releases).
+#### macOS, using Homebrew
 
-### Using Homebrew
-
-If you're using [Homebrew](https://brew.sh/index_fr) you can add GitGuardian's tap and then install src-fingerprint. Just run the following commands :
+If you're using [Homebrew](https://brew.sh/index) you can add GitGuardian's tap and then install src-fingerprint. Just run the following commands:
 
 ```shell
 brew tap gitguardian/tap
 brew install src-fingerprint
 ```
 
-### Linux packages
+#### Linux packages
 
 Deb and RPM packages are available on [Cloudsmith](https://cloudsmith.io/~gitguardian/repos/src-fingerprint/packages/).
 
@@ -47,10 +46,31 @@ Setup instructions:
 - [Deb packages](https://cloudsmith.io/~gitguardian/repos/src-fingerprint/setup/#formats-deb)
 - [RPM packages](https://cloudsmith.io/~gitguardian/repos/src-fingerprint/setup/#formats-rpm)
 
-### From the sources
+#### Windows
 
-You need `go` installed and `GOBIN` in your `PATH`. Once that is done, run the
-command:
+Open a PowerShell prompt and run this command:
+
+```shell
+iwr -useb https://raw.githubusercontent.com/GitGuardian/src-fingerprint/main/scripts/windows-installer.ps1 | iex
+```
+
+The script asks for the installation directory. To install silently, use these commands instead:
+
+```shell
+iwr -useb https://raw.githubusercontent.com/GitGuardian/src-fingerprint/main/scripts/windows-installer.ps1 -Outfile install.ps1
+.\install.ps1 C:\Destination\Dir
+rm install.ps1
+```
+
+Note that `src-fingerprint` requires Unix commands such as `bash` to be available, so it runs better from a "Git Bash" prompt.
+
+#### Manual download
+
+You can also download the archives directly from the [releases page](http://github.com/gitguardian/src-fingerprint/releases).
+
+### Installing from sources
+
+You need `go` installed and `GOBIN` in your `PATH`. Once that is done, run the command:
 
 ```shell
 $ go get -u github.com/gitguardian/src-fingerprint/cmd/src-fingerprint
