@@ -37,3 +37,29 @@ jobs:
         run: |
           go test -race $(go list ./...) -v -coverprofile=.coverage.out
           go tool cover -func=.coverage.out
+  integration-tests:
+    name: Integration Tests
+    runs-on: ${{ matrix.os }}
+    if: github.event_name == 'push'
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - name: Set up Go 1.16
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.16
+        id: go
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: go build -v -o . ./cmd/src-fingerprint
+
+      - name: Run Integration Tests
+        env:
+          GH_INTEGRATION_TESTS_TOKEN: ${{ secrets.GH_INTEGRATION_TESTS_TOKEN }}
+        run: |
+          python3 -m pip install pytest
+          pytest tests
