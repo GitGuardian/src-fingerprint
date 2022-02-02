@@ -90,7 +90,7 @@ func main() {
 	app := &cli.App{
 		Name:    "src-fingerprint",
 		Version: version,
-		Usage:   "Collect user/organization file hashes from your vcs provider of choice",
+		Usage:   "Collect user/organization source code fingerprints from your vcs provider of choice",
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
 				Name:    "verbose",
@@ -326,7 +326,7 @@ loop:
 
 	if fsOutput {
 		path, _ := filepath.Abs(c.String("output"))
-		fmt.Printf("Collected file hashes saved in file %s\n", path) // nolint
+		fmt.Printf("Collected fingerprints saved in file %s\n", path) // nolint
 	}
 
 	return nil
