@@ -33,10 +33,11 @@ def get_output_repos(output_path) -> Set[str]:
 
 
 def test_local_repository():
-    run_src_fingerprint(provider="repository", args=["--object", "."])
+    run_src_fingerprint(provider="repository", args=["--object", "../src-fingerprint"])
     repos = get_output_repos("fingerprints.jsonl")
     os.remove("fingerprints.jsonl")
     assert len(repos) == 1
+    assert repos == {"src-fingerprint"}
 
 
 @pytest.mark.parametrize(
