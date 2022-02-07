@@ -3,6 +3,7 @@ package provider
 import (
 	"errors"
 	"srcfingerprint/cloner"
+	"strings"
 	"time"
 )
 
@@ -44,11 +45,29 @@ func NewGenericProvider(options Options) Provider {
 
 func (p *GenericProvider) Gather(user string) ([]GitRepository, error) {
 	if user == "" {
-		return nil, errors.New("This provider requires a object. Example: src-fingerprint -p repository -u 'git@github.com:GitGuardian/gg-shield.git'") // nolint
+		return nil, errors.New(
+			"this provider requires an object. " +
+				"Example: src-fingerprint -p repository -u 'https://github.com/GitGuardian/src-fingerprint'",
+		)
+	}
+
+	var name string
+	if p.options.RepositoryName != "" {
+		name = p.options.RepositoryName
+	} else {
+		// Split the repository URL or patch and use the last part
+		parts := strings.Split(user, "/")
+		if parts[len(parts)-1] == ".git" && len(parts) > 2 {
+			// As "path/to/project/.git" is valid, we use the second to last part when the last part is ".git"
+			name = parts[len(parts)-2]
+		} else {
+			name = parts[len(parts)-1]
+			name = strings.TrimSuffix(name, ".git")
+		}
 	}
 
 	return []GitRepository{&Repository{
-		name:        p.options.RepositoryName,
+		name:        name,
 		httpURL:     user,
 		createdAt:   time.Time{},
 		storageSize: 0,
