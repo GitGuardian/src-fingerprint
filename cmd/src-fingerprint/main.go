@@ -90,98 +90,109 @@ func main() {
 	app := &cli.App{
 		Name:    "src-fingerprint",
 		Version: version,
-		Usage:   "Collect user/organization source code fingerprints from your vcs provider of choice",
-		Flags: []cli.Flag{
-			&cli.BoolFlag{
-				Name:    "verbose",
-				Aliases: []string{"v"},
-				Value:   false,
-				Usage:   "verbose logging",
-			},
-			&cli.BoolFlag{
-				Name:  "debug",
-				Value: false,
-				Usage: "debug logging, override verbose",
-			},
-			&cli.BoolFlag{
-				Name:  "include-forked-repos",
-				Value: false,
-				Usage: "include forked repositories. Available for 'github' and 'gitlab' providers.",
-			},
-			&cli.BoolFlag{
-				Name:  "include-public-repos",
-				Value: false,
-				Usage: "Include fileshas from both public and private repositories. Available for 'github' provider only.",
-			},
-			&cli.BoolFlag{
-				Name:  "include-archived-repos",
-				Value: false,
-				Usage: "Include archived repositories. Available for 'github' provider only.",
-			},
-			&cli.StringFlag{
-				Name:    "output",
-				Aliases: []string{"o"},
-				Value:   "./fingerprints.jsonl.gz",
-				Usage:   "set output path to `FILE`. Use \"-\" to redirect to stdout.",
-			},
-			&cli.StringFlag{
-				Name:    "export-format",
-				Aliases: []string{"f"},
-				Value:   "gzip-jsonl",
-				Usage:   "export format: 'jsonl'/'gzip-jsonl'/'json'/'gzip-json'",
-			},
-			&cli.StringFlag{
-				Name:  "clone-dir",
-				Value: "-",
-				Usage: "set cloning location for repositories",
-			},
-			&cli.StringFlag{
-				Name:  "after",
-				Value: "",
-				Usage: "set a commit date after which we want to collect fileshas",
-			},
-			&cli.StringFlag{
-				Name:     "provider",
-				Aliases:  []string{"p"},
-				Required: true,
-				Usage:    "vcs provider. options: 'gitlab'/'github'/'bitbucket'/'repository'",
-			},
-			&cli.StringFlag{
-				Name:  "repo-name",
-				Usage: "Name of the repository to display in outputs if the provider is 'repository'",
-			},
-			&cli.BoolFlag{
-				Name:  "repo-is-private",
-				Value: false,
-				Usage: "Private status value to display in outputs if the provider is 'repository'",
-			},
-			&cli.StringFlag{
-				Name:    "token",
-				Aliases: []string{"t"},
-				Usage:   "token for vcs access.",
-				EnvVars: []string{"VCS_TOKEN", "GITLAB_TOKEN", "GITHUB_TOKEN"},
-			},
-			&cli.StringFlag{
-				Name:    "object",
-				Aliases: []string{"u"},
-				Usage:   "repository|org|group to scrape. If not specified all reachable repositories will be collected.",
-			},
-			&cli.IntFlag{
-				Name:  "cloners",
-				Value: DefaultClonerN,
-				Usage: "number of cloners, more cloners means more memory usage",
-			},
-			&cli.StringFlag{
-				Name:  "provider-url",
-				Usage: "base URL of the Git provider API. If not set, defaults URL are used.",
-			},
-			&cli.IntFlag{
-				Name:  "limit",
-				Value: DefaultLimit,
-				Usage: "maximum number of repositories to analyze (0 for unlimited).",
+		Usage:   "src-fingerprint is a tool to collect and manipulate source code fingerprints.",
+		Commands: []*cli.Command{
+			{
+				Name:   "collect",
+				Usage:  "Collect user or organization source code fingerprints from a vcs provider or from a local repository.",
+				Action: collectAction,
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:     "provider",
+						Aliases:  []string{"p"},
+						Required: true,
+						Usage:    "Source code provider. options: 'gitlab'/'github'/'bitbucket'/'repository'",
+					},
+					&cli.StringFlag{
+						Name:  "provider-url",
+						Usage: "base URL of the Git provider API. If not set, defaults URL are used.",
+					},
+					&cli.StringFlag{
+						Name:    "object",
+						Aliases: []string{"u"},
+						Usage:   "repository|org|group to scrape. If not specified all reachable repositories will be collected.",
+					},
+					&cli.BoolFlag{
+						Name:    "verbose",
+						Aliases: []string{"v"},
+						Value:   false,
+						Usage:   "Run with verbose logging",
+					},
+					&cli.BoolFlag{
+						Name:  "debug",
+						Value: false,
+						Usage: "debug logging, override verbose",
+					},
+					&cli.BoolFlag{
+						Name:  "debug",
+						Value: false,
+						Usage: "Run with debug logging, overrides verbose",
+					},
+					&cli.BoolFlag{
+						Name:  "include-forked-repos",
+						Value: false,
+						Usage: "include forked repositories. Available for 'github' and 'gitlab' providers.",
+					},
+					&cli.BoolFlag{
+						Name:  "include-public-repos",
+						Value: false,
+						Usage: "Include fileshas from both public and private repositories. Available for 'github' provider only.",
+					},
+					&cli.BoolFlag{
+						Name:  "include-archived-repos",
+						Value: false,
+						Usage: "Include archived repositories. Available for 'github' provider only.",
+					},
+					&cli.StringFlag{
+						Name:    "export-format",
+						Aliases: []string{"f"},
+						Value:   "gzip-jsonl",
+						Usage:   "export format: 'jsonl'/'gzip-jsonl'/'json'/'gzip-json'",
+					},
+					&cli.StringFlag{
+						Name:    "output",
+						Aliases: []string{"o"},
+						Value:   "./fingerprints.jsonl.gz",
+						Usage:   "set output path to `FILE`. Use \"-\" to redirect to stdout.",
+					},
+					&cli.StringFlag{
+						Name:  "clone-dir",
+						Value: "-",
+						Usage: "set cloning location for repositories",
+					},
+					&cli.StringFlag{
+						Name:  "after",
+						Value: "",
+						Usage: "set a commit date after which we want to collect fileshas",
+					},
+					&cli.StringFlag{
+						Name:  "repo-name",
+						Usage: "Name of the repository to display in outputs if the provider is 'repository'",
+					},
+					&cli.BoolFlag{
+						Name:  "repo-is-private",
+						Value: false,
+						Usage: "Private status value to display in outputs if the provider is 'repository'",
+					},
+					&cli.StringFlag{
+						Name:    "token",
+						Aliases: []string{"t"},
+						Usage:   "token for vcs access.",
+						EnvVars: []string{"VCS_TOKEN", "GITLAB_TOKEN", "GITHUB_TOKEN"},
+					},
+					&cli.IntFlag{
+						Name:  "cloners",
+						Value: DefaultClonerN,
+						Usage: "number of cloners, more cloners means more memory usage",
+					},
+					&cli.IntFlag{
+						Name:  "limit",
+						Value: DefaultLimit,
+						Usage: "maximum number of repositories to analyze (0 for unlimited).",
+					},
+				},
 			},
 		},
-		Action: mainAction,
 	}
 
 	if err := app.Run(os.Args); err != nil {
@@ -189,7 +200,7 @@ func main() {
 	}
 }
 
-func mainAction(c *cli.Context) error {
+func collectAction(c *cli.Context) error {
 	if c.Bool("debug") {
 		log.SetLevel(log.DebugLevel)
 	} else if c.Bool("verbose") {

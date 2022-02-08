@@ -11,6 +11,7 @@ def run_src_fingerprint(provider: str, args: Optional[List[str]] = []):
     subprocess.run(
         [
             "./src-fingerprint",
+            "collect",
             "-p",
             provider,
             "--token",
