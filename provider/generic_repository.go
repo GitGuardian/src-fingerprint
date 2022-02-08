@@ -2,9 +2,13 @@ package provider
 
 import (
 	"errors"
+	"os"
+	"path/filepath"
 	"srcfingerprint/cloner"
 	"strings"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // Repository Structure. Generic.
@@ -55,8 +59,16 @@ func (p *GenericProvider) Gather(user string) ([]GitRepository, error) {
 	if p.options.RepositoryName != "" {
 		name = p.options.RepositoryName
 	} else {
+		path := user
+		if _, err := os.Stat(user); err == nil || !os.IsNotExist(err) {
+			if absPath, err := filepath.Abs(user); err == nil {
+				log.Debugf("`%v` is a local path, will use absolute path `%v`", user, absPath)
+				path = absPath
+			}
+		}
+
 		// Split the repository URL or patch and use the last part
-		parts := strings.Split(user, "/")
+		parts := strings.Split(path, "/")
 		if parts[len(parts)-1] == ".git" && len(parts) > 2 {
 			// As "path/to/project/.git" is valid, we use the second to last part when the last part is ".git"
 			name = parts[len(parts)-2]
@@ -64,6 +76,8 @@ func (p *GenericProvider) Gather(user string) ([]GitRepository, error) {
 			name = parts[len(parts)-1]
 			name = strings.TrimSuffix(name, ".git")
 		}
+
+		log.Warnf("Name of the repository unspecified (see --repo-name). '%v' has been inferred from the object.", name)
 	}
 
 	return []GitRepository{&Repository{
