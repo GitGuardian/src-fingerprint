@@ -99,6 +99,11 @@ func main() {
 				Usage:   "verbose logging",
 			},
 			&cli.BoolFlag{
+				Name:  "debug",
+				Value: false,
+				Usage: "debug logging, override verbose",
+			},
+			&cli.BoolFlag{
 				Name:  "include-forked-repos",
 				Value: false,
 				Usage: "include forked repositories. Available for 'github' and 'gitlab' providers.",
@@ -185,7 +190,9 @@ func main() {
 }
 
 func mainAction(c *cli.Context) error {
-	if c.Bool("verbose") {
+	if c.Bool("debug") {
+		log.SetLevel(log.DebugLevel)
+	} else if c.Bool("verbose") {
 		log.SetLevel(log.InfoLevel)
 	} else {
 		log.SetLevel(log.WarnLevel)
