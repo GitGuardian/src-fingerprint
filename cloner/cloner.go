@@ -84,12 +84,12 @@ func cloneGitRepository(destDir, gitRepoURL string) error {
 			log.WithError(err).WithFields(log.Fields{
 				"op":     "gitError",
 				"stderr": stderr,
-			}).WithField("url", gitRepoURL).Warnf("missing repo")
+			}).Warnf("missing repo")
 		} else {
 			log.WithError(err).WithFields(log.Fields{
 				"op":     "gitError",
 				"stderr": stderr,
-			}).WithField("url", gitRepoURL).Errorf("unhandled git error")
+			}).Errorf("unhandled git error")
 		}
 
 		return errors.New("")
