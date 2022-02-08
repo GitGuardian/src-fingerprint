@@ -36,7 +36,7 @@ func NewDiskCloner(baseDir string) *DiskCloner {
 			return diskCloner
 		}
 
-		log.Warnln("Clone directory provided does not exist. Will clone in default cache directory.")
+		log.Warnln("Clone directory provided does not exist locally. Will clone in default cache directory.")
 	}
 
 	if cacheDir, err := os.UserCacheDir(); err == nil {
