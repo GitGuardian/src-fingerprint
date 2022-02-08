@@ -51,7 +51,7 @@ func (p *GenericProvider) Gather(user string) ([]GitRepository, error) {
 	if user == "" {
 		return nil, errors.New(
 			"this provider requires an object. " +
-				"Example: src-fingerprint -p repository -u 'https://github.com/GitGuardian/src-fingerprint'",
+				"Example: src-fingerprint collect -p repository -u 'https://github.com/GitGuardian/src-fingerprint'",
 		)
 	}
 

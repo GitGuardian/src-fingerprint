@@ -2,23 +2,23 @@
 
 - [Introduction](#introduction)
 - [Installation](#installation)
-	- [Using pre-compiled executables](#using-pre-compiled-executables)
-	- [Installing from sources](#installing-from-sources)
+  - [Using pre-compiled executables](#using-pre-compiled-executables)
+  - [Installing from sources](#installing-from-sources)
 - [Generate My Token](#generate-my-token)
-    - [GitHub](#github)
-    - [GitLab](#gitlab)
+  - [GitHub](#github)
+  - [GitLab](#gitlab)
 - [Compute my code fingerprints](#compute-my-code-fingerprints)
-    - [GitHub](#github-1)
-    - [GitLab](#gitlab-1)
-    - [Bitbucket server (formely Atlassian Stash)](#bitbucket-server-formely-atlassian-stash)
-    - [Repository](#repository)
+  - [GitHub](#github-1)
+  - [GitLab](#gitlab-1)
+  - [Bitbucket server (formely Atlassian Stash)](#bitbucket-server-formely-atlassian-stash)
+  - [Repository](#repository)
 - [License](#License)
 
 ## Introduction
 
 The purpose of `src-fingerprint` is to provide an easy way to extract git related information (namely all file shas of a repository) from your hosted source version control system.
 
-This util supports 3 main version control systems:
+This util's main command is the `collect` command used to collect source code fingerprints from a version control system or a local repository. It supports 3 main VCS:
 
 - GitHub and GitHub Enterprise
 - Gitlab CE and EE
@@ -94,7 +94,7 @@ $ go get -u github.com/gitguardian/src-fingerprint/cmd/src-fingerprint
 3. Click the `read repository` box. This is the only scope we need. You can set an end-date for the token validity if you want more security
 4. Click on `Create personal token`. The token will only be available at this time so make sure you keep it in a safe place
 
-## Compute my code fingerprints
+## Collect my code fingerprints
 
 ### General information
 
@@ -171,31 +171,31 @@ Allows the processing of a single repository given a git clone URL
 1. ssh cloning
 
 ```sh
-src-fingerprint -p repository -u 'git@github.com:GitGuardian/gg-shield.git'
+src-fingerprint collect -p repository -u 'git@github.com:GitGuardian/gg-shield.git'
 ```
 
 2. http cloning with basic authentication
 
 ```sh
-src-fingerprint -p repository -u 'https://user:password@github.com/GitGuardian/gg-shield.git'
+src-fingerprint collect -p repository -u 'https://user:password@github.com/GitGuardian/gg-shield.git'
 ```
 
 2. http cloning without basic authentication
 
 ```sh
-src-fingerprint -p repository -u 'https://github.com/GitGuardian/gg-shield.git'
+src-fingerprint collect -p repository -u 'https://github.com/GitGuardian/gg-shield.git'
 ```
 
 3. repository in a local directory
 
 ```sh
-src-fingerprint -p repository -u /projects/gitlab/src-fingerprint
+src-fingerprint collect -p repository -u /projects/gitlab/src-fingerprint
 ```
 
 4. repository in current directory
 
 ```sh
-src-fingerprint -p repository -u .
+src-fingerprint collect -p repository -u .
 ```
 
 ## License
