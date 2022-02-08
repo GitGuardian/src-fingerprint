@@ -19,6 +19,9 @@
 # Pycharm
 .idea
 
+# Python
+__pycache__/
+
 # Mac
 .DS_store
 
