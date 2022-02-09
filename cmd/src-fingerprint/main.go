@@ -91,6 +91,20 @@ func main() {
 		Name:    "src-fingerprint",
 		Version: version,
 		Usage:   "src-fingerprint is a tool to collect and manipulate source code fingerprints.",
+		Before:  beforeAction,
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:    "verbose",
+				Aliases: []string{"v"},
+				Value:   false,
+				Usage:   "Run with verbose logging",
+			},
+			&cli.BoolFlag{
+				Name:  "debug",
+				Value: false,
+				Usage: "Run with debug logging, override verbose",
+			},
+		},
 		Commands: []*cli.Command{
 			{
 				Name:   "collect",
@@ -111,22 +125,6 @@ func main() {
 						Name:    "object",
 						Aliases: []string{"u"},
 						Usage:   "repository|org|group to scrape. If not specified all reachable repositories will be collected.",
-					},
-					&cli.BoolFlag{
-						Name:    "verbose",
-						Aliases: []string{"v"},
-						Value:   false,
-						Usage:   "Run with verbose logging",
-					},
-					&cli.BoolFlag{
-						Name:  "debug",
-						Value: false,
-						Usage: "debug logging, override verbose",
-					},
-					&cli.BoolFlag{
-						Name:  "debug",
-						Value: false,
-						Usage: "Run with debug logging, overrides verbose",
 					},
 					&cli.BoolFlag{
 						Name:  "include-forked-repos",
@@ -200,7 +198,7 @@ func main() {
 	}
 }
 
-func collectAction(c *cli.Context) error {
+func beforeAction(c *cli.Context) error {
 	if c.Bool("debug") {
 		log.SetLevel(log.DebugLevel)
 	} else if c.Bool("verbose") {
@@ -209,6 +207,10 @@ func collectAction(c *cli.Context) error {
 		log.SetLevel(log.WarnLevel)
 	}
 
+	return nil
+}
+
+func collectAction(c *cli.Context) error {
 	output := os.Stdout
 	fsOutput := false
 

@@ -127,13 +127,13 @@ Note that by default, `src-fingerprint` will exclude forked repositories from th
 1. Export all fingerprints from private repositories from a GitHub Org to the default path `./fingerprints.jsonl.gz` with logs:
 
 ```sh
-env VCS_TOKEN="<token>" src-fingerprint -v --provider github --object ORG_NAME
+env VCS_TOKEN="<token>" src-fingerprint -v collect --provider github --object ORG_NAME
 ```
 
 2. Export all fingerprints of every repository the user can access to the default path `./fingerprints.jsonl.gz`:
 
 ```sh
-env VCS_TOKEN="<token>" src-fingerprint -v --provider github --include-public-repos --include-forked-repos --include-archived-repos
+env VCS_TOKEN="<token>" src-fingerprint -v collect --provider github --include-public-repos --include-forked-repos --include-archived-repos
 ```
 
 ### GitLab
@@ -141,13 +141,13 @@ env VCS_TOKEN="<token>" src-fingerprint -v --provider github --include-public-re
 1. Export all fingerprints from private repositories of a GitLab group to the default path `./fingerprints.jsonl.gz` with logs:
 
 ```sh
-env VCS_TOKEN="<token>" src-fingerprint -v --provider gitlab --object "GitGuardian-dev-group"
+env VCS_TOKEN="<token>" src-fingerprint -v collect --provider gitlab --object "GitGuardian-dev-group"
 ```
 
 2. Export all fingerprints of every project the user can access to the default path `./fingerprints.jsonl.gz` with logs:
 
 ```sh
-env VCS_TOKEN="<token>" src-fingerprint -v --provider gitlab --include-forked-repos
+env VCS_TOKEN="<token>" src-fingerprint -v collect --provider gitlab --include-forked-repos
 ```
 
 ### Bitbucket server (formely Atlassian Stash)
@@ -155,13 +155,13 @@ env VCS_TOKEN="<token>" src-fingerprint -v --provider gitlab --include-forked-re
 1. Export all fingerprints from a Bitbucket project with private repository to the default path `./fingerprints.jsonl.gz` with logs:
 
 ```sh
-env VCS_TOKEN="<token>" src-fingerprint -v --provider bitbucket --object "GitGuardian Project"
+env VCS_TOKEN="<token>" src-fingerprint -v collect --provider bitbucket --object "GitGuardian Project"
 ```
 
 2. Export all fingerprints of every repository the user can access to the default path `./fingerprints.jsonl.gz` with logs:
 
 ```sh
-env VCS_TOKEN="<token>" src-fingerprint -v --provider bitbucket
+env VCS_TOKEN="<token>" src-fingerprint -v collect --provider bitbucket
 ```
 
 ### Repository
