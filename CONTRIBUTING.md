@@ -44,8 +44,8 @@ It reads from CLI and environment the configuration and run the Pipeline on an o
 
 - Run on a given user/group
   ```sh
-  ./src-fingerprint --provider github --object Uber
-  ./src-fingerprint --provider-url http://gitlab.example.com --provider gitlab --object Groupe
+  ./src-fingerprint collect --provider github --object Uber
+  ./src-fingerprint collect --provider-url http://gitlab.example.com --provider gitlab --object Groupe
   ```
 
 ## Performance considerations
