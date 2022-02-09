@@ -68,7 +68,7 @@ func (p *GenericProvider) Gather(user string) ([]GitRepository, error) {
 		}
 
 		// Split the repository URL or patch and use the last part
-		parts := strings.Split(path, "/")
+		parts := strings.Split(path, string(os.PathSeparator))
 		if parts[len(parts)-1] == ".git" && len(parts) > 2 {
 			// As "path/to/project/.git" is valid, we use the second to last part when the last part is ".git"
 			name = parts[len(parts)-2]
