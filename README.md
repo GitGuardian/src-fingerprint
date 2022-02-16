@@ -80,19 +80,19 @@ $ go get -u github.com/gitguardian/src-fingerprint/cmd/src-fingerprint
 
 ### GitHub
 
-1. Click on your profile picture at the top right of the screen. A dropdown menu will appear and you will be able to access your personal settings by clicking on _Settings_
-2. On your profile, go to Developer Settings
-3. Select Personal Access Tokens
-4. Click on `Generate a new token`
-5. Click the `repo` box. This is the only scope we need
-6. Click on `Generate token`. The token will only be available at this time so make sure you keep it in a safe place
+1. Click on your profile picture at the top right of the screen. A dropdown menu will appear and you will be able to access your personal settings by clicking on _Settings_.
+2. On your profile, go to Developer Settings.
+3. Select Personal Access Tokens.
+4. Click on `Generate a new token`.
+5. Click the `repo` box. This is the only scope we need.
+6. Click on `Generate token`. The token will only be available at this time so make sure you keep it in a safe place.
 
 ### GitLab
 
-1. Click on your profile picture at the top right of the screen. A dropdown menu will appear and you will be able to access your personal settings by clicking on _Preferences_
-2. In the left sidebar, click on `Access Tokens`
-3. Click the `read repository` box. This is the only scope we need. You can set an end-date for the token validity if you want more security
-4. Click on `Create personal token`. The token will only be available at this time so make sure you keep it in a safe place
+1. Click on your profile picture at the top right of the screen. A dropdown menu will appear and you will be able to access your personal settings by clicking on _Preferences_.
+2. In the left sidebar, click on `Access Tokens`.
+3. Click the `read_api` box. This is the only scope we need. You can set an end-date for the token validity if you want more security.
+4. Click on `Create personal token`. The token will only be available at this time so make sure you keep it in a safe place.
 
 ## Collect my code fingerprints
 
@@ -138,7 +138,8 @@ env VCS_TOKEN="<token>" src-fingerprint -v collect --provider github --include-p
 
 ### GitLab
 
-1. Export all fingerprints from private repositories of a GitLab group to the default path `./fingerprints.jsonl.gz` with logs:
+1. Export all fingerprints from private repositories of a GitLab group to the default path `./fingerprints.jsonl.gz` with logs:  
+   **Note :** If you are targeting a self-hosted GitLab instance, use the `--provider-url` to specify its url, don't forget to include the scheme.
 
 ```sh
 env VCS_TOKEN="<token>" src-fingerprint -v collect --provider gitlab --object "GitGuardian-dev-group"
@@ -152,7 +153,8 @@ env VCS_TOKEN="<token>" src-fingerprint -v collect --provider gitlab --include-f
 
 ### Bitbucket server (formely Atlassian Stash)
 
-1. Export all fingerprints from a Bitbucket project with private repository to the default path `./fingerprints.jsonl.gz` with logs:
+1. Export all fingerprints from a Bitbucket project with private repository to the default path `./fingerprints.jsonl.gz` with logs:  
+   **Note :** If you are targeting a self-hosted BitBucket instance, use the `--provider-url` to specify its url, don't forget to include the scheme.
 
 ```sh
 env VCS_TOKEN="<token>" src-fingerprint -v collect --provider bitbucket --object "GitGuardian Project"
