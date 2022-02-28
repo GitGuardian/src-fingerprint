@@ -86,7 +86,7 @@ func (fe *FastExtractor) Run(path string, after string) chan *GitFile {
 			}
 		}
 
-		log.Infof("finished iterating over files, we have collected %d files\n", num)
+		log.Infof("finished iterating over files, %d file(s) collected.\n", num)
 
 		if err := os.RemoveAll(path); err != nil {
 			log.Errorln("Unable to remove directory ", path)
