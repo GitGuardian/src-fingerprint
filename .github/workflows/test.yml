@@ -75,6 +75,8 @@ jobs:
       - name: Run Integration Tests
         env:
           GH_INTEGRATION_TESTS_TOKEN: ${{ secrets.GH_INTEGRATION_TESTS_TOKEN }}
+          BITBUCKET_INTEGRATION_TESTS_TOKEN: ${{ secrets.BITBUCKET_INTEGRATION_TESTS_TOKEN }}
+          BITBUCKET_INTEGRATION_TESTS_URL: ${{ secrets.BITBUCKET_INTEGRATION_TESTS_URL }}
         run: |
           python3 -m pip install pytest
           pytest tests
