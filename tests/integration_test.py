@@ -2,26 +2,32 @@ import os
 import json
 import subprocess
 import pytest
+import sys
 
 from typing import Set, Optional, List
 
 GH_INTEGRATION_TESTS_TOKEN = os.environ["GH_INTEGRATION_TESTS_TOKEN"]
+BITBUCKET_INTEGRATION_TESTS_TOKEN = os.environ["BITBUCKET_INTEGRATION_TESTS_TOKEN"]
+BITBUCKET_INTEGRATION_TESTS_URL = os.environ["BITBUCKET_INTEGRATION_TESTS_URL"]
 
-def run_src_fingerprint(provider: str, args: Optional[List[str]] = []):
-    subprocess.run(
+def run_src_fingerprint(provider: str, token: str, args: Optional[List[str]] = []):
+    return subprocess.run(
         [
             "./src-fingerprint",
+            "-v",
             "collect",
             "-p",
             provider,
             "--token",
-            GH_INTEGRATION_TESTS_TOKEN,
+            token,
             "-f",
             "jsonl",
             "-o",
             "fingerprints.jsonl"
         ] + args,
-        check=True
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
     )
 
 def load_jsonl(jsonl_path):
@@ -34,7 +40,7 @@ def get_output_repos(output_path) -> Set[str]:
 
 
 def test_local_repository():
-    run_src_fingerprint(provider="repository", args=["--object", "../src-fingerprint"])
+    run_src_fingerprint(provider="repository", token=GH_INTEGRATION_TESTS_TOKEN, args=["--object", "../src-fingerprint"])
     repos = get_output_repos("fingerprints.jsonl")
     os.remove("fingerprints.jsonl")
     assert len(repos) == 1
@@ -118,8 +124,8 @@ def test_local_repository():
         )
     ]
 )
-def test_src_fingerprint_no_object_specified(title, cmd_args, expected_output_repos):
-    run_src_fingerprint(provider="github", args=cmd_args)
+def test_src_fingerprint_github_no_object_specified(title, cmd_args, expected_output_repos):
+    run_src_fingerprint(provider="github", token=GH_INTEGRATION_TESTS_TOKEN, args=cmd_args)
     output_repos = get_output_repos("fingerprints.jsonl")
     os.remove("fingerprints.jsonl")
     assert output_repos == expected_output_repos
@@ -179,8 +185,48 @@ def test_src_fingerprint_no_object_specified(title, cmd_args, expected_output_re
         )
     ]
 )
-def test_src_fingerprint_on_org(title, cmd_args, expected_output_repos):
-    run_src_fingerprint(provider="github", args=["--object", "gg-src-fingerprint-org"]+cmd_args)
+def test_src_fingerprint_github_on_org(title, cmd_args, expected_output_repos):
+    run_src_fingerprint(provider="github", token=GH_INTEGRATION_TESTS_TOKEN, args=["--object", "gg-src-fingerprint-org"]+cmd_args)
+    output_repos = get_output_repos("fingerprints.jsonl")
+    os.remove("fingerprints.jsonl")
+    assert output_repos == expected_output_repos
+
+
+@pytest.mark.parametrize(
+    "title, cmd_args, number_of_expected_output_repos", [
+        (
+            "Get all repos accesible to integration tests token",
+            ["--limit", "10"], 
+            10
+        ),
+    ]
+)
+def test_src_fingerprint_bitbucket_no_object_specified(title, cmd_args, number_of_expected_output_repos):
+    output = run_src_fingerprint(
+        provider="bitbucket",
+        token = BITBUCKET_INTEGRATION_TESTS_TOKEN,
+        args=cmd_args+["--provider-url", BITBUCKET_INTEGRATION_TESTS_URL]
+    )
+    output_repos = get_output_repos("fingerprints.jsonl")
+    os.remove("fingerprints.jsonl")
+    assert len(output_repos) == number_of_expected_output_repos
+
+
+@pytest.mark.parametrize(
+    "title, cmd_args, expected_output_repos", [
+        (
+            "Get all repos accesible to integration tests token for project 'src fingerprint'",
+            ["--limit", "10","--object", "src fingerprint"], 
+            {"src fingerprint test", "main-test-repo"}
+        ),
+    ]
+)
+def test_src_fingerprint_bitbucket_object_specified(title, cmd_args, expected_output_repos):
+    output = run_src_fingerprint(
+        provider="bitbucket",
+        token = BITBUCKET_INTEGRATION_TESTS_TOKEN,
+        args=cmd_args+["--provider-url", BITBUCKET_INTEGRATION_TESTS_URL]
+    )
     output_repos = get_output_repos("fingerprints.jsonl")
     os.remove("fingerprints.jsonl")
     assert output_repos == expected_output_repos
