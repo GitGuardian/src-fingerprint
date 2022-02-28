@@ -112,13 +112,13 @@ func NewBitbucketProvider(token string, options Options) Provider {
 	return &BitbucketProvider{client: client, options: options, token: token, transport: transport}
 }
 
-func (p *BitbucketProvider) gatherPage(start int, project string) ([]GitRepository, int, error) {
+func (p *BitbucketProvider) gatherRepos(start int, project string) ([]GitRepository, int, error) {
 	opt := &bitbucket.ListRepositoriesOptions{ListOptions: bitbucket.ListOptions{Start: start, Limit: reposPerPage}}
 	if project != "" {
 		opt.ProjectName = project
 	}
 
-	log.Infof("Gathering page %v\n", start)
+	log.Infof("Gathering repos %v -> %v\n", start, start+reposPerPage)
 
 	repos, resp, err := p.client.Repositories.List(context.Background(), opt)
 	if err != nil {
@@ -150,7 +150,7 @@ func (p *BitbucketProvider) collect(
 
 		var pageRepositories []GitRepository
 
-		pageRepositories, start, err = p.gatherPage(start, project)
+		pageRepositories, start, err = p.gatherRepos(start, project)
 		if err != nil {
 			log.Errorf("Error gathering start %v:%v\n", start, err)
 

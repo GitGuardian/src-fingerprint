@@ -328,13 +328,13 @@ loop:
 				continue
 			}
 
-			log.Infof("%v/%v repos: %v files analyzed\n",
+			log.Infof("Repository %v/%v: %v files analyzed\n",
 				doneRepo, totalRepo, gitFilesCount)
 		}
 	}
 
 	log.Infoln("Final stats:")
-	log.Infof("%v/%v repos: %v files analyzed\n",
+	log.Infof("Repository %v/%v: %v files analyzed\n",
 		doneRepo, totalRepo, gitFilesCount)
 	log.Infof("Dumping to output %v\n", c.String("output"))
 
