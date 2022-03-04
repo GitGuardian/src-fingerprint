@@ -209,20 +209,21 @@ def test_src_fingerprint_bitbucket_no_object_specified(title, cmd_args, number_o
     )
     output_repos = get_output_repos("fingerprints.jsonl")
     os.remove("fingerprints.jsonl")
-    assert len(output_repos) == number_of_expected_output_repos
+    assert f"Collected {number_of_expected_output_repos} repos," in output.stdout.decode()
+    assert len(output_repos) < number_of_expected_output_repos
 
 
 @pytest.mark.parametrize(
     "title, cmd_args, expected_output_repos", [
         (
             "Get all repos accesible to integration tests token for project 'src fingerprint'",
-            ["--limit", "10","--object", "src fingerprint"], 
+            ["--object", "src fingerprint"], 
             {"src fingerprint test", "main-test-repo"}
         ),
     ]
 )
 def test_src_fingerprint_bitbucket_object_specified(title, cmd_args, expected_output_repos):
-    output = run_src_fingerprint(
+    run_src_fingerprint(
         provider="bitbucket",
         token = BITBUCKET_INTEGRATION_TESTS_TOKEN,
         args=cmd_args+["--provider-url", BITBUCKET_INTEGRATION_TESTS_URL]
