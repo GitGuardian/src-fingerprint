@@ -122,6 +122,8 @@ Here is an example of some lines of a `.jsonl` format output:
 
 Note that by default, `src-fingerprint` will exclude forked repositories from the fingerprints computation. **For GitHub provider** archived repositories and public repositories will also be excluded by default. Use flags `--include-forked-repos`, `--include-archived-repos` or `include-public-repos` to change this behavior.
 
+For all the following examples, we assume that the user is able to clone repositories using an HTTP URL with basic authentication. If for any reason this is not possible with the user's organization, `src-fingerprint` supports ssh cloning by using the dedicated option `--ssh-cloning`. Note though that this option is not the standard configuration of the tool but rather a workaround for this type of edge case. Especially, this option may bring some issues in the event of discrepancies in permissions between the token provided for API-based repos listing, and the SSH keys used to clone these repos.
+
 ### GitHub
 
 1. Export all fingerprints from private repositories from a GitHub Org to the default path `./fingerprints.jsonl.gz` with logs:

@@ -158,6 +158,11 @@ func main() {
 						Value: "-",
 						Usage: "set cloning location for repositories",
 					},
+					&cli.BoolFlag{
+						Name:  "ssh-cloning",
+						Value: false,
+						Usage: "Use ssh to clone repositories. The standard behavior is not guaranteed with this option.",
+					},
 					&cli.StringFlag{
 						Name:  "after",
 						Value: "",
@@ -243,6 +248,7 @@ func collectAction(c *cli.Context) error {
 		BaseURL:              c.String("provider-url"),
 		RepositoryName:       c.String("repo-name"),
 		RespositoryIsPrivate: c.Bool("repo-is-private"),
+		SSHCloning:           c.Bool("ssh-cloning"),
 	}
 
 	defer func() {
