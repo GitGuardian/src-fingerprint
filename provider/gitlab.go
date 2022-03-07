@@ -244,9 +244,10 @@ func (p *GitLabProvider) collectFromGroup(repositories []GitRepository,
 func (p *GitLabProvider) CloneRepository(
 	cloner cloner.Cloner,
 	repository GitRepository) (string, error) {
-	url := repository.GetHTTPUrl()
-	// If token doesn't exist, don't try to basic auth
-	if p.token != "" {
+	url := repository.GetSSHUrl()
+	// If token doesn't exist or if SSH cloning was specified, don't try to basic auth
+	if p.token != "" && !p.options.SSHCloning {
+		url = repository.GetHTTPUrl()
 		url = strings.Replace(url, "https://", fmt.Sprintf("https://%s:%s@", p.token, p.token), 1)
 	}
 

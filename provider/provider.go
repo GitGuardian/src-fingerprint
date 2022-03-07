@@ -49,6 +49,8 @@ type Options struct {
 	IncludePublicRepos bool
 	// Repository private status to display in the output if the provider is 'repository'
 	RespositoryIsPrivate bool
+	// Use SSH to clone repositories.
+	SSHCloning bool
 	// BaseURL is the base URL of the API
 	BaseURL string
 	// Repository name to display in the output if the provider is 'repository'
