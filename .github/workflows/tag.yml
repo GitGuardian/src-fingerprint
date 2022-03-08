@@ -15,7 +15,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install Cloudsmith CLI
-        run: pip install cloudsmith-cli==0.31.1
+        run: pip install cloudsmith-cli
 
       - name: Set up Go
         uses: actions/setup-go@v2
@@ -30,7 +30,7 @@ jobs:
           args: release --rm-dist
         env:
           # To publish the release on GitHub
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # To publish on the Homebrew tap
           PAT_GITHUB: ${{ secrets.PAT_GITHUB }}
           # To publish on Cloudsmith
