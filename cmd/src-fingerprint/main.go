@@ -23,7 +23,7 @@ const MaxPipelineEvents = 100
 
 func runExtract(
 	pipeline *srcfingerprint.Pipeline,
-	object string,
+	objects []string,
 	after string,
 	limit int) chan srcfingerprint.PipelineEvent {
 	// buffer it a bit so it won't block if this is going too fast
@@ -31,7 +31,10 @@ func runExtract(
 
 	go func(eventChannel chan srcfingerprint.PipelineEvent) {
 		defer close(eventChannel)
-		pipeline.ExtractRepositories(object, after, eventChannel, limit)
+
+		for _, object := range objects {
+			pipeline.ExtractRepositories(object, after, eventChannel, limit)
+		}
 	}(ch)
 
 	return ch
@@ -121,7 +124,7 @@ func main() {
 						Name:  "provider-url",
 						Usage: "base URL of the Git provider API. If not set, defaults URL are used.",
 					},
-					&cli.StringFlag{
+					&cli.StringSliceFlag{
 						Name:    "object",
 						Aliases: []string{"u"},
 						Usage:   "repository|org|group to scrape. If not specified all reachable repositories will be collected.",
@@ -278,7 +281,7 @@ func collectAction(c *cli.Context) error {
 
 	ticker := time.Tick(1 * time.Second)
 
-	eventChannel := runExtract(&pipeline, c.String("object"), c.String("after"), c.Int("limit"))
+	eventChannel := runExtract(&pipeline, c.StringSlice("object"), c.String("after"), c.Int("limit"))
 
 	// runtime stats
 	var (
@@ -299,7 +302,7 @@ loop:
 
 			switch typedEvent := event.(type) {
 			case srcfingerprint.RepositoryListPipelineEvent:
-				totalRepo = len(typedEvent.Repositories)
+				totalRepo += len(typedEvent.Repositories)
 			case srcfingerprint.RepositoryPipelineEvent:
 				if typedEvent.Finished {
 					doneRepo++
