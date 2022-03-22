@@ -118,21 +118,22 @@ func main() {
 						Name:     "provider",
 						Aliases:  []string{"p"},
 						Required: true,
-						Usage:    "Source code provider. options: 'gitlab'/'github'/'bitbucket'/'repository'",
+						Usage:    "Source code provider. options: 'gitlab'/'github'/'bitbucket'/'repository'.",
 					},
 					&cli.StringFlag{
 						Name:  "provider-url",
-						Usage: "base URL of the Git provider API. If not set, defaults URL are used.",
+						Usage: "Base URL of the Git provider API. If not set, defaults URL are used.",
 					},
 					&cli.StringSliceFlag{
 						Name:    "object",
 						Aliases: []string{"u"},
-						Usage:   "repository|org|group to scrape. If not specified all reachable repositories will be collected.",
+						Usage: "Repository, organization or group to scrape. If not specified all reachable " +
+							"repositories will be collected.",
 					},
 					&cli.BoolFlag{
 						Name:  "include-forked-repos",
 						Value: false,
-						Usage: "include forked repositories. Available for 'github' and 'gitlab' providers.",
+						Usage: "Include forked repositories. Available for 'github' and 'gitlab' providers.",
 					},
 					&cli.BoolFlag{
 						Name:  "include-public-repos",
@@ -148,18 +149,18 @@ func main() {
 						Name:    "export-format",
 						Aliases: []string{"f"},
 						Value:   "gzip-jsonl",
-						Usage:   "export format: 'jsonl'/'gzip-jsonl'/'json'/'gzip-json'",
+						Usage:   "Export format: 'jsonl'/'gzip-jsonl'/'json'/'gzip-json'.",
 					},
 					&cli.StringFlag{
 						Name:    "output",
 						Aliases: []string{"o"},
 						Value:   "./fingerprints.jsonl.gz",
-						Usage:   "set output path to `FILE`. Use \"-\" to redirect to stdout.",
+						Usage:   "Set output path to `FILE`. Use \"-\" to redirect to stdout.",
 					},
 					&cli.StringFlag{
 						Name:  "clone-dir",
 						Value: "-",
-						Usage: "set cloning location for repositories",
+						Usage: "Set cloning location for repositories.",
 					},
 					&cli.BoolFlag{
 						Name:  "ssh-cloning",
@@ -169,32 +170,33 @@ func main() {
 					&cli.StringFlag{
 						Name:  "after",
 						Value: "",
-						Usage: "set a commit date after which we want to collect fileshas",
+						Usage: "Set a commit date after which we want to collect fileshas.",
 					},
 					&cli.StringFlag{
 						Name:  "repo-name",
-						Usage: "Name of the repository to display in outputs if the provider is 'repository'",
+						Usage: "Name of the repository to display in outputs if the provider is 'repository'.",
 					},
 					&cli.BoolFlag{
 						Name:  "repo-is-private",
 						Value: false,
-						Usage: "Private status value to display in outputs if the provider is 'repository'",
+						Usage: "Private status value to display in outputs if the provider is 'repository'.",
 					},
 					&cli.StringFlag{
 						Name:    "token",
 						Aliases: []string{"t"},
-						Usage:   "token for vcs access.",
+						Usage:   "Token for vcs access.",
 						EnvVars: []string{"VCS_TOKEN", "GITLAB_TOKEN", "GITHUB_TOKEN"},
 					},
 					&cli.IntFlag{
 						Name:  "cloners",
 						Value: DefaultClonerN,
-						Usage: "number of cloners, more cloners means more memory usage",
+						Usage: "Number of cloners, more cloners means more memory usage.",
 					},
 					&cli.IntFlag{
 						Name:  "limit",
 						Value: DefaultLimit,
-						Usage: "maximum number of repositories to analyze (0 for unlimited).",
+						Usage: "Maximum number of repositories to analyze (0 for unlimited). " +
+							"The limit is applied for independently to each object.",
 					},
 				},
 			},

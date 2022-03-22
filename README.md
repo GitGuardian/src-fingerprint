@@ -103,6 +103,7 @@ The default format is `gzip-jsonl` to minimize the size of the output file.
 The default output filepath is `./fingerprints.jsonl.gz`. Use `--output` to override this behavior.  
 Also, note that if you were to download fingerprints for repositories of a big organization, `src-fingerprint` has a limit to process no more than 100
 repositories. You can override this limit with the option `--limit`, a limit of 0 will process all repos of the organization.
+Note that if multiple organizations are passed, the limit is applied to each one independently.
 
 ### Sample output
 
@@ -126,10 +127,10 @@ For all the following examples, we assume that the user is able to clone reposit
 
 ### GitHub
 
-1. Export all fingerprints from private repositories from a GitHub Org to the default path `./fingerprints.jsonl.gz` with logs:
+1. Export all fingerprints from private repositories from GitHub Orgs to the default path `./fingerprints.jsonl.gz` with logs:
 
 ```sh
-env VCS_TOKEN="<token>" src-fingerprint -v collect --provider github --object ORG_NAME
+env VCS_TOKEN="<token>" src-fingerprint -v collect --provider github --object ORG_1_NAME --object ORG_2_NAME
 ```
 
 2. Export all fingerprints of every repository the user can access to the default path `./fingerprints.jsonl.gz`:
@@ -153,7 +154,7 @@ env VCS_TOKEN="<token>" src-fingerprint -v collect --provider gitlab --object "G
 env VCS_TOKEN="<token>" src-fingerprint -v collect --provider gitlab --include-forked-repos
 ```
 
-### Bitbucket server (formely Atlassian Stash)
+### Bitbucket server (formerly Atlassian Stash)
 
 1. Export all fingerprints from a Bitbucket project with private repository to the default path `./fingerprints.jsonl.gz` with logs:  
    **Note :** If you are targeting a self-hosted BitBucket instance, use the `--provider-url` to specify its url, don't forget to include the scheme.
@@ -190,10 +191,10 @@ src-fingerprint collect -p repository -u 'https://user:password@github.com/GitGu
 src-fingerprint collect -p repository -u 'https://github.com/GitGuardian/gg-shield.git'
 ```
 
-3. repository in a local directory
+3. repository in multiple local directories
 
 ```sh
-src-fingerprint collect -p repository -u /projects/gitlab/src-fingerprint
+src-fingerprint collect -p repository -u /projects/gitlab/src-fingerprint -u /projects/gitlab/internal-api
 ```
 
 4. repository in current directory
