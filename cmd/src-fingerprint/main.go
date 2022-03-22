@@ -26,7 +26,12 @@ func runExtract(
 	objects []string,
 	after string,
 	limit int) chan srcfingerprint.PipelineEvent {
-	// buffer it a bit so it won't block if this is going too fast
+	// If there is no object, default to an empty object
+	if len(objects) == 0 {
+		objects = []string{""}
+	}
+
+	// buffer it a bit, so it won't block if this is going too fast
 	ch := make(chan srcfingerprint.PipelineEvent, MaxPipelineEvents)
 
 	go func(eventChannel chan srcfingerprint.PipelineEvent) {
