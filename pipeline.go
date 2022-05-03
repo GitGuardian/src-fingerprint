@@ -1,9 +1,12 @@
 package srcfingerprint
 
 import (
+	"context"
+	"errors"
 	"srcfingerprint/cloner"
 	"srcfingerprint/provider"
 	"sync"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
@@ -104,12 +107,12 @@ func (p *Pipeline) gather(
 }
 
 // ExtractRepository extracts for a single repository.
-func (p *Pipeline) ExtractRepository(repository provider.GitRepository, after string, eventChan chan<- PipelineEvent) error { // nolint
+func (p *Pipeline) ExtractRepository(ctx context.Context, repository provider.GitRepository, after string, eventChan chan<- PipelineEvent) error { // nolint
 	defer p.publishEvent(eventChan, RepositoryPipelineEvent{true, repository.GetPrivate(), repository.GetName()})
 
 	log.Infof("Cloning repo %v\n", repository.GetName())
 
-	gitRepository, err := p.Provider.CloneRepository(p.Cloner, repository)
+	gitRepository, err := p.Provider.CloneRepository(ctx, p.Cloner, repository)
 	if err != nil {
 		return err
 	}
@@ -119,8 +122,17 @@ func (p *Pipeline) ExtractRepository(repository provider.GitRepository, after st
 	extractorGitFile := NewFastExtractor()
 	extractorGitFile.Run(gitRepository, after)
 
-	for gitFile := range extractorGitFile.ChanGitFiles {
-		p.publishEvent(eventChan, ResultGitFilePipelineEvent{repository, gitFile})
+loop:
+	for {
+		select {
+		case gitFile, opened := <-extractorGitFile.ChanGitFiles:
+			if !opened {
+				break loop
+			}
+			p.publishEvent(eventChan, ResultGitFilePipelineEvent{repository, gitFile})
+		case <-ctx.Done():
+			return errors.New("timeout reached while extracting files")
+		}
 	}
 
 	log.Infof("Done extracting %v\n", repository.GetName())
@@ -133,7 +145,13 @@ const (
 )
 
 // ExtractRepositories extract repositories and analyze it for a given user and provider.
-func (p *Pipeline) ExtractRepositories(object string, after string, eventChan chan<- PipelineEvent, limit int) {
+func (p *Pipeline) ExtractRepositories(
+	object string,
+	after string,
+	eventChan chan<- PipelineEvent,
+	limit int,
+	timeout time.Duration,
+) {
 	if object != "" {
 		log.Infof("Extracting all repositories for the org or group %v and accessible with the specified token.\n", object)
 	} else {
@@ -149,6 +167,12 @@ func (p *Pipeline) ExtractRepositories(object string, after string, eventChan ch
 
 	wg := sync.WaitGroup{}
 
+	ctx, cancel := context.WithCancel(context.Background())
+	if timeout > 0 {
+		ctx, cancel = context.WithTimeout(context.Background(), timeout)
+	}
+
+	defer cancel()
 	wg.Add(1)
 
 	go p.gather(&wg, eventChan, object, repositoryChannel, limit)
@@ -156,15 +180,15 @@ func (p *Pipeline) ExtractRepositories(object string, after string, eventChan ch
 	for i := 0; i < extractionWorkersCount; i++ {
 		wg.Add(1)
 
-		go func() {
+		go func(ctx context.Context) {
 			defer wg.Done()
 
 			for repository := range repositoryChannel {
-				if err := p.ExtractRepository(repository, after, eventChan); err != nil {
+				if err := p.ExtractRepository(ctx, repository, after, eventChan); err != nil {
 					log.Errorf("extracting %v failed: %v\n", repository.GetName(), err)
 				}
 			}
-		}()
+		}(ctx)
 	}
 
 	wg.Wait()

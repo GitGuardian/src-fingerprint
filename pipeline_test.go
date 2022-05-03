@@ -1,6 +1,7 @@
 package srcfingerprint
 
 import (
+	"context"
 	"path/filepath"
 	"srcfingerprint/cloner"
 	"srcfingerprint/provider"
@@ -28,7 +29,7 @@ func (mock *ProviderMock) Gather(user string) ([]provider.GitRepository, error) 
 	return args.Get(0).([]provider.GitRepository), args.Error(1)
 }
 
-func (mock *ProviderMock) CloneRepository(cloner cloner.Cloner, repository provider.GitRepository) (string, error) {
+func (mock *ProviderMock) CloneRepository(ctx context.Context, cloner cloner.Cloner, repository provider.GitRepository) (string, error) {
 	args := mock.Called(cloner, repository)
 
 	return args.String(0), args.Error(1)
@@ -122,7 +123,7 @@ func (suite *PipelineTestSuite) TestExtractGitRepository() {
 	go func() {
 		defer close(eventChan)
 
-		pipeline.ExtractRepository(repository, "", eventChan)
+		pipeline.ExtractRepository(context.Background(), repository, "", eventChan)
 	}()
 
 	events := make([]PipelineEvent, 0)
@@ -162,7 +163,7 @@ func (suite *PipelineTestSuite) TestExtractRepositories() {
 	go func() {
 		defer close(eventChan)
 
-		pipeline.ExtractRepositories("user", "", eventChan, 0)
+		pipeline.ExtractRepositories("user", "", eventChan, 0, 0)
 	}()
 
 	events := make([]PipelineEvent, 0)

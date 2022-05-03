@@ -181,7 +181,7 @@ func (p *GitHubProvider) Gather(user string) ([]GitRepository, error) {
 }
 
 // CloneRepository clones a Github repository given the token. The token must have the `read_repository` rights.
-func (p *GitHubProvider) CloneRepository(cloner cloner.Cloner,
+func (p *GitHubProvider) CloneRepository(ctx context.Context, cloner cloner.Cloner,
 	repository GitRepository) (string, error) {
 	url := repository.GetSSHUrl()
 	// If token doesn't exist or if SSH cloning was specified, don't try to basic auth
@@ -190,5 +190,5 @@ func (p *GitHubProvider) CloneRepository(cloner cloner.Cloner,
 		url = strings.Replace(url, "https://", fmt.Sprintf("https://x-access-token:%s@", p.token), 1)
 	}
 
-	return cloner.CloneRepository(url)
+	return cloner.CloneRepository(ctx, url)
 }

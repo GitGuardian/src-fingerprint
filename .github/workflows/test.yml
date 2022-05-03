@@ -9,12 +9,15 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v3
+        with:
+          go-version: 1.16
+      - uses: actions/checkout@v3
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v2
+        uses: golangci/golangci-lint-action@v3
         with:
           # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
-          version: v1.43
+          version: v1.45
   build:
     name: Build & Test
     runs-on: ubuntu-latest
@@ -77,6 +80,7 @@ jobs:
           GH_INTEGRATION_TESTS_TOKEN: ${{ secrets.GH_INTEGRATION_TESTS_TOKEN }}
           BITBUCKET_INTEGRATION_TESTS_TOKEN: ${{ secrets.BITBUCKET_INTEGRATION_TESTS_TOKEN }}
           BITBUCKET_INTEGRATION_TESTS_URL: ${{ secrets.BITBUCKET_INTEGRATION_TESTS_URL }}
+          REPOSITORY_TRIGGERING_TIMEOUT: ${{ secrets.REPOSITORY_TRIGGERING_TIMEOUT }}
         run: |
           python3 -m pip install pytest
           pytest tests

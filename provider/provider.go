@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"context"
 	"time"
 
 	"srcfingerprint/cloner"
@@ -33,7 +34,7 @@ type Provider interface {
 	// from the provider.
 	Gather(user string) ([]GitRepository, error)
 
-	CloneRepository(cloner cloner.Cloner, repository GitRepository) (string, error)
+	CloneRepository(ctx context.Context, cloner cloner.Cloner, repository GitRepository) (string, error)
 }
 
 // Options represents options for the Provider.

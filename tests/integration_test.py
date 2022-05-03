@@ -2,38 +2,48 @@ import os
 import json
 import subprocess
 import pytest
-import sys
 
 from typing import Set, Optional, List
 
 GH_INTEGRATION_TESTS_TOKEN = os.environ["GH_INTEGRATION_TESTS_TOKEN"]
 BITBUCKET_INTEGRATION_TESTS_TOKEN = os.environ["BITBUCKET_INTEGRATION_TESTS_TOKEN"]
 BITBUCKET_INTEGRATION_TESTS_URL = os.environ["BITBUCKET_INTEGRATION_TESTS_URL"]
+REPOSITORY_TRIGGERING_TIMEOUT = os.environ["REPOSITORY_TRIGGERING_TIMEOUT"]
 
-def run_src_fingerprint(provider: str, token: str, args: Optional[List[str]] = []):
-    return subprocess.run(
-        [
+
+def open_src_fingerprint(provider, args: List[str]) -> subprocess.Popen:
+    # Warning: on Windows, .wait(timeout=..) won't work
+    return subprocess.Popen(
+        args=[
             "./src-fingerprint",
             "-v",
             "collect",
             "-p",
             provider,
-            "--token",
-            token,
             "-f",
             "jsonl",
             "-o",
             "fingerprints.jsonl"
         ] + args,
-        check=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
     )
+
+
+def run_src_fingerprint(provider: str, token: str, args: Optional[List[str]] = []) -> str:
+    process = open_src_fingerprint(
+        provider,
+        ["--token", token, *args]
+    )
+    stdout, _ = process.communicate()
+    return stdout.decode()
+
 
 def load_jsonl(jsonl_path):
     with open(jsonl_path) as f:
         for line in f:
             yield json.loads(line)
+
 
 def get_output_repos(output_path) -> Set[str]:
     return {x["repository_name"] for x in load_jsonl(output_path)}
@@ -209,7 +219,7 @@ def test_src_fingerprint_bitbucket_no_object_specified(title, cmd_args, number_o
     )
     output_repos = get_output_repos("fingerprints.jsonl")
     os.remove("fingerprints.jsonl")
-    assert f"Collected {number_of_expected_output_repos} repos," in output.stdout.decode()
+    assert f"Collected {number_of_expected_output_repos} repos," in output
     assert len(output_repos) < number_of_expected_output_repos
 
 
@@ -231,3 +241,23 @@ def test_src_fingerprint_bitbucket_object_specified(title, cmd_args, expected_ou
     output_repos = get_output_repos("fingerprints.jsonl")
     os.remove("fingerprints.jsonl")
     assert output_repos == expected_output_repos
+
+
+def test_src_fingerprint_timeout():
+    if os.name == "posix":
+        without_timeout = open_src_fingerprint(
+            provider="repository",
+            args=["--object", REPOSITORY_TRIGGERING_TIMEOUT]
+        )
+        with pytest.raises(subprocess.TimeoutExpired):
+            without_timeout.wait(timeout=5)
+        without_timeout.terminate()
+        assert b"timeout reached" not in without_timeout.stdout.read()
+
+
+    with_timeout = run_src_fingerprint(
+        provider="repository",
+        token="",
+        args=["--object", REPOSITORY_TRIGGERING_TIMEOUT, "--timeout", "3s"]
+    )
+    assert "timeout reached" in with_timeout
