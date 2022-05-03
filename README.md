@@ -103,7 +103,8 @@ The default format is `gzip-jsonl` to minimize the size of the output file.
 The default output filepath is `./fingerprints.jsonl.gz`. Use `--output` to override this behavior.  
 Also, note that if you were to download fingerprints for repositories of a big organization, `src-fingerprint` has a limit to process no more than 100
 repositories. You can override this limit with the option `--limit`, a limit of 0 will process all repos of the organization.
-Note that if multiple organizations are passed, the limit is applied to each one independently.
+Note that if multiple organizations are passed, the limit is applied to each one independently.  
+There is no default timeout, it can be set with the option `--timeout`. Similarly to the limit, it is applied to each source independently.
 
 ### Sample output
 

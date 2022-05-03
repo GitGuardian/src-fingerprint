@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"context"
 	"errors"
 	"os"
 	"path/filepath"
@@ -90,7 +91,8 @@ func (p *GenericProvider) Gather(user string) ([]GitRepository, error) {
 }
 
 func (p *GenericProvider) CloneRepository(
+	ctx context.Context,
 	cloner cloner.Cloner,
 	repository GitRepository) (string, error) {
-	return cloner.CloneRepository(repository.GetHTTPUrl())
+	return cloner.CloneRepository(ctx, repository.GetHTTPUrl())
 }

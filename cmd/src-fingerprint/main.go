@@ -25,7 +25,8 @@ func runExtract(
 	pipeline *srcfingerprint.Pipeline,
 	objects []string,
 	after string,
-	limit int) chan srcfingerprint.PipelineEvent {
+	limit int,
+	timeout time.Duration) chan srcfingerprint.PipelineEvent {
 	// If there is no object, default to an empty object
 	if len(objects) == 0 {
 		objects = []string{""}
@@ -38,7 +39,7 @@ func runExtract(
 		defer close(eventChannel)
 
 		for _, object := range objects {
-			pipeline.ExtractRepositories(object, after, eventChannel, limit)
+			pipeline.ExtractRepositories(object, after, eventChannel, limit, timeout)
 		}
 	}(ch)
 
@@ -84,6 +85,7 @@ type authorInfo struct {
 
 const DefaultClonerN = 8
 const DefaultLimit = 100
+const DefaultTimeout = 0
 
 func main() {
 	cli.VersionFlag = &cli.BoolFlag{
@@ -203,6 +205,11 @@ func main() {
 						Usage: "Maximum number of repositories to analyze (0 for unlimited). " +
 							"The limit is applied for independently to each object.",
 					},
+					&cli.DurationFlag{
+						Name:  "timeout",
+						Value: DefaultTimeout,
+						Usage: "Maximum time to process each object (0 for unlimited, min. 1s).",
+					},
 				},
 			},
 		},
@@ -267,6 +274,12 @@ func collectAction(c *cli.Context) error {
 		}
 	}()
 
+	timeout := c.Duration("timeout")
+	if timeout != 0 && timeout < time.Second {
+		log.Error("timeout must be 0 or >= 1")
+		cli.ShowAppHelpAndExit(c, 1)
+	}
+
 	srcProvider, err := getProvider(c.String("provider"), c.String("token"), providerOptions)
 	if err != nil {
 		log.Errorln(err)
@@ -288,7 +301,13 @@ func collectAction(c *cli.Context) error {
 
 	ticker := time.Tick(1 * time.Second)
 
-	eventChannel := runExtract(&pipeline, c.StringSlice("object"), c.String("after"), c.Int("limit"))
+	eventChannel := runExtract(
+		&pipeline,
+		c.StringSlice("object"),
+		c.String("after"),
+		c.Int("limit"),
+		timeout,
+	)
 
 	// runtime stats
 	var (

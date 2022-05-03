@@ -1,12 +1,9 @@
 package cloner
 
 import (
-	"bytes"
-	"errors"
+	"context"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"strings"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -15,7 +12,7 @@ const gitExitUnclean = 128
 
 // Cloner represents a cloner of git repository.
 type Cloner interface {
-	CloneRepository(url string) (string, error)
+	CloneRepository(ctx context.Context, url string) (string, error)
 }
 
 // DiskCloner closes a git repository on disk in a temporary file.
@@ -52,48 +49,17 @@ func NewDiskCloner(baseDir string) *DiskCloner {
 }
 
 // CloneRepository clones a git repository given its information.
-func (d *DiskCloner) CloneRepository(url string) (string, error) {
+func (d *DiskCloner) CloneRepository(ctx context.Context, url string) (string, error) {
 	tmpDir, err := os.MkdirTemp(d.BaseDir, "srcfingerprint-")
 	if err != nil {
 		return "", err
 	}
 
-	if err := cloneGitRepository(tmpDir, url); err != nil {
+	if err := cloneGitRepository(ctx, tmpDir, url); err != nil {
 		os.RemoveAll(tmpDir)
 
 		return "", err
 	}
 
 	return tmpDir, nil
-}
-
-func cloneGitRepository(destDir, gitRepoURL string) error {
-	var outbuf, errbuf bytes.Buffer
-	// git clone github.com/author/name.git /tmp/workdir/author-name/clone
-	cmd := exec.Command("git", "clone", gitRepoURL, destDir)
-	cmd.Stdout = &outbuf
-	cmd.Stderr = &errbuf
-
-	cmd.Env = append(os.Environ(), "GIT_TERMINAL_PROMPT=0")
-
-	err := cmd.Run()
-	if exitError, ok := err.(*exec.ExitError); ok {
-		stderr := strings.TrimSpace(errbuf.String())
-
-		if exitError.ExitCode() == gitExitUnclean {
-			log.WithError(err).WithFields(log.Fields{
-				"op":     "gitError",
-				"stderr": stderr,
-			}).Warnf("missing repo")
-		} else {
-			log.WithError(err).WithFields(log.Fields{
-				"op":     "gitError",
-				"stderr": stderr,
-			}).Errorf("unhandled git error")
-		}
-
-		return errors.New("")
-	}
-
-	return err
 }
