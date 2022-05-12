@@ -23,6 +23,7 @@ nfpms:
       - rpm
     dependencies:
       - git
+      - procps
     bindir: /usr/bin
     vendor: GitGuardian
     maintainer: GitGuardian <dev@gitguardian.com>
