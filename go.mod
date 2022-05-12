@@ -3,6 +3,7 @@ module srcfingerprint
 go 1.16
 
 require (
+	github.com/Jeffail/tunny v0.1.4 // indirect
 	github.com/Microsoft/go-winio v0.5.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect

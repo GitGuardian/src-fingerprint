@@ -12,6 +12,7 @@
   - [GitLab](#gitlab-1)
   - [Bitbucket server (formely Atlassian Stash)](#bitbucket-server-formely-atlassian-stash)
   - [Repository](#repository)
+- [Performance](#performance-and-memory-usage)
 - [License](#License)
 
 ## Introduction
@@ -203,6 +204,15 @@ src-fingerprint collect -p repository -u /projects/gitlab/src-fingerprint -u /pr
 ```sh
 src-fingerprint collect -p repository -u .
 ```
+
+### Performance and memory usage
+
+`src-fingerprint` will by default process each object (`--object`/`-u`) one by one. When an object (ie: a GitHub Organization)
+contains multiple repositories, they are processed in parallel by multiple cloners, the number of cloners is configurable 
+with `--cloners`. Adding more cloners will increase the memory usage of `src-fingerprint`. When extracting fingerprints
+from multiple sources (e.g. with multiple --object values), you can use the option `--pool` to configure the number of 
+workers that will process the objects in parallel. Each worker will have `--cloners` cloners. Be cautious when increasing 
+both `--cloners` and `--pool`, the memory usage may increase drastically.
 
 ## License
 
