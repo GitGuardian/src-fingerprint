@@ -21,31 +21,6 @@ var date = "unknown"
 
 const MaxPipelineEvents = 100
 
-func runExtract(
-	pipeline *srcfingerprint.Pipeline,
-	objects []string,
-	after string,
-	limit int,
-	timeout time.Duration) chan srcfingerprint.PipelineEvent {
-	// If there is no object, default to an empty object
-	if len(objects) == 0 {
-		objects = []string{""}
-	}
-
-	// buffer it a bit, so it won't block if this is going too fast
-	ch := make(chan srcfingerprint.PipelineEvent, MaxPipelineEvents)
-
-	go func(eventChannel chan srcfingerprint.PipelineEvent) {
-		defer close(eventChannel)
-
-		for _, object := range objects {
-			pipeline.ExtractRepositories(object, after, eventChannel, limit, timeout)
-		}
-	}(ch)
-
-	return ch
-}
-
 func getProvider(providerStr string, token string, providerOptions provider.Options) (provider.Provider, error) {
 	switch providerStr {
 	case "github":
@@ -210,6 +185,12 @@ func main() {
 						Value: DefaultTimeout,
 						Usage: "Maximum time to process each object (0 for unlimited, min. 1s).",
 					},
+					&cli.UintFlag{
+						Name:  "pool",
+						Value: 1,
+						Usage: "Size of the pool of worker to process objects simultaneously." +
+							"More workers means more memory and it compounds with the number of cloners.",
+					},
 				},
 			},
 		},
@@ -277,19 +258,24 @@ func collectAction(c *cli.Context) error {
 	timeout := c.Duration("timeout")
 	if timeout != 0 && timeout < time.Second {
 		log.Error("timeout must be 0 or >= 1")
-		cli.ShowAppHelpAndExit(c, 1)
+		cli.ShowCommandHelpAndExit(c, c.Command.Name, 1)
 	}
 
 	srcProvider, err := getProvider(c.String("provider"), c.String("token"), providerOptions)
 	if err != nil {
 		log.Errorln(err)
-		cli.ShowAppHelpAndExit(c, 1)
+		cli.ShowCommandHelpAndExit(c, c.Command.Name, 1)
 	}
 
 	outputExporter, err := getExporter(c.String("export-format"), output)
 	if err != nil {
 		log.Errorln(err)
-		cli.ShowAppHelpAndExit(c, 1)
+		cli.ShowCommandHelpAndExit(c, c.Command.Name, 1)
+	}
+
+	if c.Int("pool") == 0 {
+		log.Errorln("--pool must be non-null")
+		cli.ShowCommandHelpAndExit(c, c.Command.Name, 1)
 	}
 
 	pipeline := srcfingerprint.Pipeline{
@@ -307,6 +293,7 @@ func collectAction(c *cli.Context) error {
 		c.String("after"),
 		c.Int("limit"),
 		timeout,
+		c.Int("pool"),
 	)
 
 	// runtime stats

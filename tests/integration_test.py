@@ -48,6 +48,9 @@ def load_jsonl(jsonl_path):
 def get_output_repos(output_path) -> Set[str]:
     return {x["repository_name"] for x in load_jsonl(output_path)}
 
+def get_output_shas(output_path) -> Set[str]:
+    return {x["sha"] for x in load_jsonl(output_path)}
+
 
 def test_local_repository():
     run_src_fingerprint(provider="repository", token=GH_INTEGRATION_TESTS_TOKEN, args=["--object", "../src-fingerprint"])
@@ -261,3 +264,59 @@ def test_src_fingerprint_timeout():
         args=["--object", REPOSITORY_TRIGGERING_TIMEOUT, "--timeout", "3s"]
     )
     assert "timeout reached" in with_timeout
+
+    os.remove("fingerprints.jsonl")
+
+
+def test_src_fingerprint_pool_argument():
+    repositories = [
+       "https://github.com/GitGuardian/src-fingerprint.git",
+       "https://github.com/GitGuardian/ggshield.git",
+       "https://github.com/GitGuardian/py-gitguardian.git",
+       "https://github.com/GitGuardian/ggshield-action.git",
+    ]
+    objects = [arg for object in repositories for arg in ("-u", object)]
+
+    run_src_fingerprint(
+        provider="repository",
+        token="",
+        args=[*objects, "--pool", "1"]
+    )
+    with_pool_1 = get_output_shas("fingerprints.jsonl")
+    os.remove("fingerprints.jsonl")
+
+    run_src_fingerprint(
+        provider="repository",
+        token="",
+        args=[*objects, "--pool", "4"]
+    )
+    with_pool_4 = get_output_shas("fingerprints.jsonl")
+    os.remove("fingerprints.jsonl")
+
+    assert with_pool_1 == with_pool_4
+
+
+def test_src_fingerprint_pool_argument_with_timeout():
+    repositories = [
+       "https://github.com/GitGuardian/src-fingerprint.git",
+       REPOSITORY_TRIGGERING_TIMEOUT
+    ]
+    objects = [arg for object in repositories for arg in ("-u", object)]
+
+    run_src_fingerprint(
+        provider="repository",
+        token="",
+        args=["--timeout", "5s", *objects, "--pool", "1"]
+    )
+    with_pool_1 = get_output_shas("fingerprints.jsonl")
+    os.remove("fingerprints.jsonl")
+
+    run_src_fingerprint(
+        provider="repository",
+        token="",
+        args=["--timeout", "5s", *objects, "--pool", "4"]
+    )
+    with_pool_4 = get_output_shas("fingerprints.jsonl")
+    os.remove("fingerprints.jsonl")
+
+    assert with_pool_1 == with_pool_4
