@@ -3,9 +3,9 @@ package srcfingerprint
 import (
 	"testing"
 
+	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
 type AnalyzerTestSuite struct {
