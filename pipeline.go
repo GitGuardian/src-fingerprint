@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-git/go-git/v5/plumbing/object"
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
 // PipelineEvent is the interface for a pipeline event.

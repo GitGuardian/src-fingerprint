@@ -1,7 +1,7 @@
 package srcfingerprint
 
 import (
-	git "gopkg.in/src-d/go-git.v4/plumbing/object"
+	git "github.com/go-git/go-git/v5/plumbing/object"
 )
 
 // Analyzer analyzer a commit to extract its author.
